@@ -1,0 +1,112 @@
+{
+  "checks": [
+    {
+      "name": "page loads with no JS errors",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "header restaurant count populated",
+      "pass": true,
+      "detail": "got \"8,652\""
+    },
+    {
+      "name": "8 KPI tiles render",
+      "pass": true,
+      "detail": "[[\"Restaurants\",\"8,652\"],[\"Avg cost for two\",\"₹624\"],[\"Avg rating\",\"3.35\"]]"
+    },
+    {
+      "name": "Avg cost tile = ₹624",
+      "pass": true,
+      "detail": "₹624"
+    },
+    {
+      "name": "Avg rating tile = 3.35",
+      "pass": true,
+      "detail": "3.35"
+    },
+    {
+      "name": "Restaurants tile = 8,652",
+      "pass": true,
+      "detail": "8,652"
+    },
+    {
+      "name": "page \"overview\" renders svg marks",
+      "pass": true,
+      "detail": "64 marks"
+    },
+    {
+      "name": "page \"cost\" renders svg marks",
+      "pass": true,
+      "detail": "832 marks"
+    },
+    {
+      "name": "page \"cuisine\" renders svg marks",
+      "pass": true,
+      "detail": "76 marks"
+    },
+    {
+      "name": "page \"opportunity\" renders svg marks",
+      "pass": true,
+      "detail": "169 marks"
+    },
+    {
+      "name": "page \"method\" renders svg marks",
+      "pass": true,
+      "detail": "0 marks"
+    },
+    {
+      "name": "pandas <-> JS self-check: all KPIs agree",
+      "pass": true,
+      "detail": "11 checked, 0 mismatched []"
+    },
+    {
+      "name": "city slicer changes the KPI",
+      "pass": true,
+      "detail": "8,652 -> 20"
+    },
+    {
+      "name": "active-filter note reflects the slicer",
+      "pass": true,
+      "detail": "20 of 8,652 restaurants in scopeCity: Bangalore"
+    },
+    {
+      "name": "reset restores the unfiltered KPI",
+      "pass": true,
+      "detail": "8,652 vs 8,652"
+    },
+    {
+      "name": "luxury chip narrows to 388 restaurants",
+      "pass": true,
+      "detail": "388"
+    },
+    {
+      "name": "clicking a city bar cross-filters",
+      "pass": true,
+      "detail": "5,473 of 8,652 restaurants in scopeCity: New Delhi"
+    },
+    {
+      "name": "chart table-view toggle produces a data table",
+      "pass": true,
+      "detail": "9 rows"
+    },
+    {
+      "name": "dark mode applies",
+      "pass": true,
+      "detail": "dark"
+    },
+    {
+      "name": "screenshots optimised for the repo",
+      "pass": true,
+      "detail": "4633 KB -> 1438 KB"
+    }
+  ],
+  "screenshots": [
+    "page-cost.png",
+    "page-cuisine.png",
+    "page-method.png",
+    "page-opportunity.png",
+    "page-overview-dark.png",
+    "page-overview.png"
+  ]
+}

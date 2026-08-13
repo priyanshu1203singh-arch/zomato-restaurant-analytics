@@ -1,0 +1,12 @@
+{
+  "name": "zomato-restaurant-analytics",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Verification harness for the Zomato restaurant analytics dashboard",
+  "scripts": {
+    "verify": "node scripts/04_verify_dashboard.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.0"
+  }
+}

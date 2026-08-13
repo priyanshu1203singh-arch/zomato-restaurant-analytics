@@ -1,0 +1,7 @@
+# Pipeline
+pandas>=2.0
+numpy>=1.24
+
+# Screenshot / verification helper used by scripts/02_build_kpis.py sanity checks
+# (optional; only needed if you regenerate the README image crops)
+Pillow>=10.0

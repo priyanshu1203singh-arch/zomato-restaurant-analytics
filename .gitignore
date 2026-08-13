@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# Node (only used by the verification script)
+node_modules/
+package-lock.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Power BI working files
+*.pbix.bak
+~$*.pbix
+
+# Keep the data: this project is only reproducible if the extract ships with it.
+# (2.2 MB raw + ~2 MB processed is well inside a comfortable repo size.)
+!data/raw/zomato.csv
+!data/processed/*.csv

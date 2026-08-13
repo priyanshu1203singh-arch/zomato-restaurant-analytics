@@ -1,0 +1,347 @@
+[
+  {
+    "check": "total restaurants (India) in README.md",
+    "pass": true,
+    "detail": "looked for '8,652'"
+  },
+  {
+    "check": "total restaurants (India) in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '8,652'"
+  },
+  {
+    "check": "total restaurants (India) in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '8,652'"
+  },
+  {
+    "check": "total restaurants (global) in README.md",
+    "pass": true,
+    "detail": "looked for '9,551'"
+  },
+  {
+    "check": "total restaurants (global) in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '9,551'"
+  },
+  {
+    "check": "total restaurants (global) in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '9,551'"
+  },
+  {
+    "check": "cities covered in README.md",
+    "pass": true,
+    "detail": "looked for '43'"
+  },
+  {
+    "check": "cities covered in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '43'"
+  },
+  {
+    "check": "cities covered in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '43'"
+  },
+  {
+    "check": "localities covered in README.md",
+    "pass": true,
+    "detail": "looked for '784'"
+  },
+  {
+    "check": "localities covered in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '784'"
+  },
+  {
+    "check": "localities covered in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '784'"
+  },
+  {
+    "check": "avg cost for two in README.md",
+    "pass": true,
+    "detail": "looked for '\u20b9624'"
+  },
+  {
+    "check": "avg cost for two in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '\u20b9624'"
+  },
+  {
+    "check": "avg cost for two in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '\u20b9624'"
+  },
+  {
+    "check": "median cost for two in README.md",
+    "pass": true,
+    "detail": "looked for '\u20b9450'"
+  },
+  {
+    "check": "median cost for two in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '\u20b9450'"
+  },
+  {
+    "check": "median cost for two in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '\u20b9450'"
+  },
+  {
+    "check": "p90 cost for two in README.md",
+    "pass": true,
+    "detail": "looked for '\u20b91,300'"
+  },
+  {
+    "check": "p90 cost for two in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '\u20b91,300'"
+  },
+  {
+    "check": "p90 cost for two in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '\u20b91,300'"
+  },
+  {
+    "check": "avg rating in README.md",
+    "pass": true,
+    "detail": "looked for '3.35'"
+  },
+  {
+    "check": "avg rating in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '3.35'"
+  },
+  {
+    "check": "avg rating in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '3.35'"
+  },
+  {
+    "check": "naive avg rating in README.md",
+    "pass": true,
+    "detail": "looked for '2.52'"
+  },
+  {
+    "check": "naive avg rating in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '2.52'"
+  },
+  {
+    "check": "naive avg rating in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '2.52'"
+  },
+  {
+    "check": "not-rated pct in README.md",
+    "pass": true,
+    "detail": "looked for '24.7%'"
+  },
+  {
+    "check": "not-rated pct in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '24.7%'"
+  },
+  {
+    "check": "not-rated pct in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '24.7%'"
+  },
+  {
+    "check": "online delivery pct in README.md",
+    "pass": true,
+    "detail": "looked for '28.0%'"
+  },
+  {
+    "check": "online delivery pct in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '28.0%'"
+  },
+  {
+    "check": "online delivery pct in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '28.0%'"
+  },
+  {
+    "check": "table booking pct in README.md",
+    "pass": true,
+    "detail": "looked for '12.8%'"
+  },
+  {
+    "check": "table booking pct in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '12.8%'"
+  },
+  {
+    "check": "table booking pct in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '12.8%'"
+  },
+  {
+    "check": "total votes in README.md",
+    "pass": true,
+    "detail": "looked for '1,187,163'"
+  },
+  {
+    "check": "total votes in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '1,187,163'"
+  },
+  {
+    "check": "total votes in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '1,187,163'"
+  },
+  {
+    "check": "distinct cuisines in README.md",
+    "pass": true,
+    "detail": "looked for '90'"
+  },
+  {
+    "check": "distinct cuisines in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '90'"
+  },
+  {
+    "check": "distinct cuisines in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '90'"
+  },
+  {
+    "check": "cost/rating correlation in README.md",
+    "pass": true,
+    "detail": "looked for '0.205'"
+  },
+  {
+    "check": "cost/rating correlation in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '0.205'"
+  },
+  {
+    "check": "votes/rating correlation in README.md",
+    "pass": true,
+    "detail": "looked for '0.463'"
+  },
+  {
+    "check": "votes/rating correlation in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '0.463'"
+  },
+  {
+    "check": "NCR concentration in README.md",
+    "pass": true,
+    "detail": "looked for '91.9%'"
+  },
+  {
+    "check": "NCR concentration in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '91.9%'"
+  },
+  {
+    "check": "top-3 cuisine share in README.md",
+    "pass": true,
+    "detail": "looked for '70.6%'"
+  },
+  {
+    "check": "top-3 cuisine share in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '70.6%'"
+  },
+  {
+    "check": "bridge row count in POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "looked for '19,714'"
+  },
+  {
+    "check": "bridge row count in INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "looked for '19,714'"
+  },
+  {
+    "check": "deliverable dashboard/zomato_dashboard.html",
+    "pass": true,
+    "detail": "535 KB (min 300)"
+  },
+  {
+    "check": "deliverable dashboard/kpis.json",
+    "pass": true,
+    "detail": "191 KB (min 20)"
+  },
+  {
+    "check": "deliverable README.md",
+    "pass": true,
+    "detail": "15 KB (min 8)"
+  },
+  {
+    "check": "deliverable docs/POWERBI_GUIDE.md",
+    "pass": true,
+    "detail": "26 KB (min 15)"
+  },
+  {
+    "check": "deliverable docs/INTERVIEW_PREP.md",
+    "pass": true,
+    "detail": "21 KB (min 15)"
+  },
+  {
+    "check": "deliverable data/processed/fact_restaurants.csv",
+    "pass": true,
+    "detail": "2,491 KB (min 1000)"
+  },
+  {
+    "check": "deliverable data/processed/bridge_cuisine.csv",
+    "pass": true,
+    "detail": "330 KB (min 100)"
+  },
+  {
+    "check": "deliverable assets/page-overview.png",
+    "pass": true,
+    "detail": "203 KB (min 100)"
+  },
+  {
+    "check": "deliverable assets/page-cost.png",
+    "pass": true,
+    "detail": "300 KB (min 100)"
+  },
+  {
+    "check": "deliverable assets/page-cuisine.png",
+    "pass": true,
+    "detail": "227 KB (min 100)"
+  },
+  {
+    "check": "deliverable assets/page-opportunity.png",
+    "pass": true,
+    "detail": "229 KB (min 100)"
+  },
+  {
+    "check": "deliverable LICENSE",
+    "pass": true,
+    "detail": "1 KB (min 0.5)"
+  },
+  {
+    "check": "deliverable Makefile",
+    "pass": true,
+    "detail": "0 KB (min 0.1)"
+  },
+  {
+    "check": "deliverable requirements.txt",
+    "pass": true,
+    "detail": "0 KB (min 0.05)"
+  },
+  {
+    "check": "CV claim: 5,000+ restaurants analysed",
+    "pass": true,
+    "detail": "8,652 Indian restaurants in scope"
+  },
+  {
+    "check": "CV claim: benchmarked avg dining cost for two",
+    "pass": true,
+    "detail": "mean \u20b9624 / median \u20b9450"
+  },
+  {
+    "check": "CV claim: identified top-rated and most expensive",
+    "pass": true,
+    "detail": "Barbeque Nation / Orient Express - Taj Palace Hotel"
+  }
+]

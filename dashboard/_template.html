@@ -1,0 +1,1283 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zomato Restaurant Analytics &amp; Insights — Interactive Dashboard</title>
+<style>
+/* ===================================================================
+   DESIGN TOKENS
+   Validated palette. Categorical slots assigned in fixed order, never
+   cycled. Sequential/ordinal ramp is single-hue blue, light -> dark.
+   Both modes are separately stepped and separately validated.
+   =================================================================== */
+:root, :root[data-theme="light"]{
+  color-scheme: light;
+  --surface-1:#fcfcfb; --page:#f9f9f7;
+  --ink-1:#0b0b0b; --ink-2:#52514e; --ink-muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --ord1:#86b6ef; --ord2:#3987e5; --ord3:#1c5cab; --ord4:#0d366b;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --success-text:#006300;
+  --shadow:0 1px 2px rgba(11,11,11,.05), 0 4px 12px rgba(11,11,11,.04);
+  --wash:rgba(42,120,214,.08);
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --surface-1:#1a1a19; --page:#0d0d0d;
+  --ink-1:#ffffff; --ink-2:#c3c2b7; --ink-muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  --ord1:#cde2fb; --ord2:#9ec5f4; --ord3:#5598e7; --ord4:#256abf;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --success-text:#0ca30c;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  --wash:rgba(57,135,229,.14);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--page); color:var(--ink-1);
+  font:14px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1420px;margin:0 auto;padding:20px 20px 64px}
+
+/* ---------- header ---------- */
+header.top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between;margin-bottom:18px}
+h1{font-size:22px;line-height:1.25;margin:0 0 4px;letter-spacing:-.01em}
+.sub{color:var(--ink-2);font-size:13px;margin:0}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;background:var(--wash);color:var(--ink-2);border:1px solid var(--border)}
+.hbtns{display:flex;gap:8px}
+button,select,input[type=search]{font:inherit;color:inherit}
+.btn{background:var(--surface-1);border:1px solid var(--border);border-radius:8px;padding:7px 12px;cursor:pointer;box-shadow:var(--shadow)}
+.btn:hover{background:var(--wash)}
+.btn[aria-pressed=true]{background:var(--s1);color:#fff;border-color:transparent}
+
+/* ---------- tabs ---------- */
+nav.tabs{display:flex;gap:2px;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:16px}
+nav.tabs button{background:none;border:0;padding:10px 14px;cursor:pointer;color:var(--ink-2);font-weight:600;font-size:13px;border-bottom:2px solid transparent;margin-bottom:-1px}
+nav.tabs button[aria-selected=true]{color:var(--ink-1);border-bottom-color:var(--s1)}
+nav.tabs button:hover{color:var(--ink-1)}
+
+/* ---------- filter bar (one row above the charts) ---------- */
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;background:var(--surface-1);
+  border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.fgroup{display:flex;flex-direction:column;gap:5px}
+.flabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-muted)}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font-size:12px;padding:5px 10px;border-radius:999px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--ink-2)}
+.chip[aria-pressed=true]{background:var(--s1);border-color:transparent;color:#fff;font-weight:600}
+select,input[type=search]{background:var(--surface-1);border:1px solid var(--border);border-radius:8px;padding:6px 9px;min-width:150px}
+input[type=range]{width:130px;accent-color:var(--s1)}
+.active-note{font-size:12px;color:var(--ink-2);margin:0 0 14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{background:var(--wash);border:1px solid var(--border);border-radius:999px;padding:3px 9px;font-size:11.5px}
+
+/* ---------- KPI tiles ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin-bottom:16px}
+.tile{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:13px 14px;box-shadow:var(--shadow)}
+.tile .k{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-muted);display:block;margin-bottom:6px}
+.tile .v{font-size:26px;font-weight:650;letter-spacing:-.02em;line-height:1.1;display:block}
+.tile .d{font-size:11.5px;color:var(--ink-2);margin-top:5px;display:block}
+.tile .d strong{color:var(--ink-1);font-weight:600}
+
+/* ---------- cards / grid ---------- */
+.grid{display:grid;gap:12px;grid-template-columns:repeat(12,1fr)}
+.card{background:var(--surface-1);border:1px solid var(--border);border-radius:12px;padding:14px 16px 12px;box-shadow:var(--shadow);min-width:0}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c6{grid-column:span 6}.c4{grid-column:span 4}.c5{grid-column:span 5}.c7{grid-column:span 7}
+@media(max-width:1000px){.c8,.c6,.c4,.c5,.c7{grid-column:span 12}}
+.card h3{font-size:14px;margin:0 0 2px;font-weight:650}
+.card p.hint{font-size:12px;color:var(--ink-2);margin:0 0 10px}
+.card .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.tbtn{font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--ink-2);white-space:nowrap}
+.tbtn:hover{background:var(--wash)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);margin:6px 0 0}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:-1px}
+svg{display:block;width:100%;overflow:visible}
+.axistext{font-size:11px;fill:var(--ink-muted)}
+.vallabel{font-size:11.5px;fill:var(--ink-2);font-weight:600}
+.serieslabel{font-size:11.5px;fill:var(--ink-2)}
+
+/* ---------- tables ---------- */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--grid);overflow:hidden;text-overflow:ellipsis}
+td.num,th.num,th{white-space:nowrap}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-muted);font-weight:700;position:sticky;top:0;background:var(--surface-1)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr:hover{background:var(--wash)}
+.tblwrap{overflow:auto}
+.tblwrap.scroll{max-height:430px}
+.tblwrap.scroll::after{content:""}
+.rank{color:var(--ink-muted);font-variant-numeric:tabular-nums}
+.databar{position:relative}
+.databar span.bg{position:absolute;left:0;top:4px;bottom:4px;background:var(--wash);border-radius:3px}
+.databar span.tx{position:relative}
+
+/* ---------- tooltip ---------- */
+#tip{position:fixed;pointer-events:none;z-index:99;background:var(--surface-1);border:1px solid var(--border);
+  border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 6px 20px rgba(0,0,0,.18);opacity:0;transition:opacity .08s;max-width:280px}
+#tip b{display:block;margin-bottom:3px;font-size:12.5px}
+#tip .r{display:flex;justify-content:space-between;gap:14px;color:var(--ink-2)}
+#tip .r span:last-child{color:var(--ink-1);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* ---------- insight blocks ---------- */
+.insight{background:var(--surface-1);border:1px solid var(--border);border-left:3px solid var(--s1);
+  border-radius:8px;padding:11px 14px;margin:0 0 10px}
+.insight h4{margin:0 0 4px;font-size:13px}
+.insight p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.insight.warn{border-left-color:var(--warning)}
+.insight.good{border-left-color:var(--good)}
+.insight.crit{border-left-color:var(--critical)}
+.statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:4px}
+.statrow div{border:1px solid var(--border);border-radius:8px;padding:9px 11px}
+.statrow b{display:block;font-size:19px;font-weight:650;font-variant-numeric:tabular-nums}
+.statrow em{font-style:normal;font-size:11px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.03em}
+footer.ft{margin-top:26px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--ink-muted);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.hidden{display:none!important}
+code{background:var(--wash);padding:1px 5px;border-radius:4px;font-size:12px}
+.prose{font-size:13px;color:var(--ink-2);max-width:78ch}
+.prose h3{color:var(--ink-1);margin:18px 0 6px;font-size:14px}
+.prose ul{margin:6px 0 10px;padding-left:20px}
+.prose li{margin:3px 0}
+.dax{background:var(--page);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;white-space:pre;overflow-x:auto;color:var(--ink-1)}
+.check{font-size:11.5px}
+.check .ok{color:var(--success-text);font-weight:600}
+.check .bad{color:var(--critical);font-weight:600}
+</style>
+</head>
+<body data-palette="#2a78d6,#eb6834,#1baf7a,#eda100">
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <h1>Zomato Restaurant Analytics &amp; Insights</h1>
+    <p class="sub">Where to open next, what to charge, and which cuisines actually earn their rating —
+       built on <b id="hdr-count">…</b> Indian restaurants across <b id="hdr-cities">…</b> cities.</p>
+    <div class="badges">
+      <span class="badge">Source: Zomato public dataset (9,551 restaurants / 15 countries)</span>
+      <span class="badge">Money KPIs scoped to India (single currency: ₹)</span>
+      <span class="badge">Ratings exclude “not rated”</span>
+    </div>
+  </div>
+  <div class="hbtns">
+    <button class="btn" id="themeBtn" aria-pressed="false">Dark mode</button>
+    <button class="btn" id="resetBtn">Reset filters</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist">
+  <button role="tab" aria-selected="true"  data-page="overview">1 · Executive overview</button>
+  <button role="tab" aria-selected="false" data-page="cost">2 · Cost &amp; value</button>
+  <button role="tab" aria-selected="false" data-page="cuisine">3 · Cuisine &amp; city</button>
+  <button role="tab" aria-selected="false" data-page="opportunity">4 · Where to open next</button>
+  <button role="tab" aria-selected="false" data-page="method">5 · Method &amp; KPI definitions</button>
+</nav>
+
+<!-- ============ FILTER BAR (slicers) ============ -->
+<div class="filters" id="filters">
+  <div class="fgroup">
+    <label class="flabel" for="fCity">City</label>
+    <select id="fCity"><option value="">All cities</option></select>
+  </div>
+  <div class="fgroup">
+    <label class="flabel" for="fCuisine">Cuisine</label>
+    <select id="fCuisine"><option value="">All cuisines</option></select>
+  </div>
+  <div class="fgroup">
+    <span class="flabel">Price range</span>
+    <div class="chips" id="fPrice">
+      <button class="chip" data-p="1" aria-pressed="false">₹ Budget</button>
+      <button class="chip" data-p="2" aria-pressed="false">₹₹ Mid</button>
+      <button class="chip" data-p="3" aria-pressed="false">₹₹₹ Premium</button>
+      <button class="chip" data-p="4" aria-pressed="false">₹₹₹₹ Luxury</button>
+    </div>
+  </div>
+  <div class="fgroup">
+    <span class="flabel">Services</span>
+    <div class="chips" id="fSvc">
+      <button class="chip" data-s="delivery" aria-pressed="false">Online delivery</button>
+      <button class="chip" data-s="booking" aria-pressed="false">Table booking</button>
+      <button class="chip" data-s="rated" aria-pressed="false">Rated only</button>
+      <button class="chip" data-s="credible" aria-pressed="false">50+ votes</button>
+    </div>
+  </div>
+  <div class="fgroup">
+    <label class="flabel" for="fRating">Min rating <span id="fRatingV">0.0</span></label>
+    <input type="range" id="fRating" min="0" max="5" step="0.1" value="0">
+  </div>
+  <div class="fgroup" style="flex:1;min-width:170px">
+    <label class="flabel" for="fSearch">Search restaurant / locality</label>
+    <input type="search" id="fSearch" placeholder="e.g. Barbeque Nation, Hauz Khas" style="width:100%">
+  </div>
+</div>
+<p class="active-note" id="activeNote"></p>
+
+<!-- ============ PAGE 1 — OVERVIEW ============ -->
+<section id="page-overview">
+  <div class="kpis" id="kpiStrip"></div>
+
+  <div class="grid">
+    <div class="card c5">
+      <div class="hd"><div>
+        <h3>How ratings are distributed</h3>
+        <p class="hint">Rated restaurants only. The market clusters at 3.0–4.0 — a 4.5+ rating is genuinely rare.</p>
+      </div><button class="tbtn" data-table="chRatingDist">Table</button></div>
+      <div id="chRatingDist"></div>
+    </div>
+
+    <div class="card c7">
+      <div class="hd"><div>
+        <h3>Price tier: how many restaurants, and how well they score</h3>
+        <p class="hint">Bars = restaurant count (left job: magnitude). Rating is shown as a labelled figure per tier, not a second y-axis.</p>
+      </div><button class="tbtn" data-table="chPriceMix">Table</button></div>
+      <div id="chPriceMix"></div>
+    </div>
+
+    <div class="card c7">
+      <div class="hd"><div>
+        <h3>Top cities by restaurant count</h3>
+        <p class="hint">Click a bar to filter the whole dashboard to that city.</p>
+      </div><button class="tbtn" data-table="chCities">Table</button></div>
+      <div id="chCities"></div>
+    </div>
+
+    <div class="card c5">
+      <div class="hd"><div>
+        <h3>Service adoption</h3>
+        <p class="hint">Share of restaurants offering each service, within the current filter.</p>
+      </div><button class="tbtn" data-table="chService">Table</button></div>
+      <div id="chService"></div>
+    </div>
+
+    <div class="card c12">
+      <h3>What the overview page is telling you</h3>
+      <div id="insOverview"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE 2 — COST & VALUE ============ -->
+<section id="page-cost" class="hidden">
+  <div class="kpis" id="kpiStrip2"></div>
+  <div class="grid">
+    <div class="card c6">
+      <div class="hd"><div>
+        <h3>Does spending more buy a better meal?</h3>
+        <p class="hint">Average rating per cost-for-two band (restaurants with 50+ votes, so the rating is trustworthy).</p>
+      </div><button class="tbtn" data-table="chCostTrend">Table</button></div>
+      <div id="chCostTrend"></div>
+    </div>
+    <div class="card c6">
+      <div class="hd"><div>
+        <h3>Cost vs rating — every restaurant</h3>
+        <p class="hint">Shade = price tier (ordinal, one hue). Marker size = votes. Hover any dot.</p>
+      </div><button class="tbtn" data-table="chScatter">Table</button></div>
+      <div id="chScatter"></div>
+    </div>
+    <div class="card c6">
+      <h3>Most expensive establishments</h3>
+      <p class="hint">Highest average cost for two within the current filter.</p>
+      <div class="tblwrap" id="tblExpensive"></div>
+    </div>
+    <div class="card c6">
+      <h3>Best value — rating delivered per ₹100 spent</h3>
+      <p class="hint">Rating ÷ (cost for two ÷ 100), restricted to 4.0+ rated restaurants with 50+ votes.</p>
+      <div class="tblwrap" id="tblValue"></div>
+    </div>
+    <div class="card c12">
+      <h3>What the cost page is telling you</h3>
+      <div id="insCost"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE 3 — CUISINE & CITY ============ -->
+<section id="page-cuisine" class="hidden">
+  <div class="grid">
+    <div class="card c6">
+      <div class="hd"><div>
+        <h3>Cuisine supply — most common cuisines</h3>
+        <p class="hint">A restaurant can serve several cuisines, so these bars sum above the restaurant count. Click to filter.</p>
+      </div><button class="tbtn" data-table="chCuisineVol">Table</button></div>
+      <div id="chCuisineVol"></div>
+    </div>
+    <div class="card c6">
+      <div class="hd"><div>
+        <h3>Cuisine quality — highest average rating</h3>
+        <p class="hint">A dot plot on a zoomed axis, not a bar chart — these averages all sit between 3.6 and 4.0,
+         and zero-based bars would look identical. Dashed line = market average. 30+ restaurants required.</p>
+      </div><button class="tbtn" data-table="chCuisineRate">Table</button></div>
+      <div id="chCuisineRate"></div>
+    </div>
+    <div class="card c12">
+      <h3>City benchmark table</h3>
+      <p class="hint">The “is my pricing normal here?” table. Cities with 20+ restaurants. Click a row to filter. Scroll for the full list.</p>
+      <div class="tblwrap scroll" id="tblCity"></div>
+    </div>
+    <div class="card c12">
+      <h3>What the cuisine page is telling you</h3>
+      <div id="insCuisine"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE 4 — OPPORTUNITY ============ -->
+<section id="page-opportunity" class="hidden">
+  <div class="grid">
+    <div class="card c12">
+      <div class="insight">
+        <h4>The question this page answers</h4>
+        <p>“If we open one more restaurant, where?” A locality is attractive when demand is already proven
+           (high votes per restaurant = people go out and review there) but the incumbent quality bar is
+           low (a beatable average rating). Score = z(log demand) − z(avg rating), localities with 15+ restaurants only.</p>
+      </div>
+    </div>
+    <div class="card c6">
+      <div class="hd"><div>
+        <h3>Opportunity quadrant</h3>
+        <p class="hint">X = incumbent average rating. Y = votes per restaurant (log scale). Top-left = proven demand, weak competition.</p>
+      </div><button class="tbtn" data-table="chQuad">Table</button></div>
+      <div id="chQuad"></div>
+    </div>
+    <div class="card c6">
+      <h3>Ranked shortlist</h3>
+      <p class="hint">Highest opportunity score first.</p>
+      <div class="tblwrap" id="tblOpp"></div>
+    </div>
+    <div class="card c12">
+      <h3>Recommendations that fall out of the model</h3>
+      <div id="insOpp"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE 5 — METHOD ============ -->
+<section id="page-method" class="hidden">
+  <div class="grid">
+    <div class="card c12">
+      <h3>Every KPI on this dashboard, defined</h3>
+      <div class="prose" id="methodBody"></div>
+    </div>
+    <div class="card c12">
+      <h3>Self-check — this dashboard’s JavaScript vs the pandas pipeline</h3>
+      <p class="hint">The Python pipeline wrote a reference set of KPIs into this file. With no filters applied,
+         the browser recomputes them from the row-level data and compares. Both must agree.</p>
+      <div id="selfCheck" class="check"></div>
+    </div>
+  </div>
+</section>
+
+<footer class="ft">
+  <span>Zomato Restaurant Analytics · built with pandas + vanilla SVG · <span id="ftRows"></span></span>
+  <span>Ratings exclude unrated venues · money KPIs are ₹ (India only)</span>
+</footer>
+</div>
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+/*__DATA__*/
+
+/* ===================================================================
+   0. CONSTANTS AND SMALL HELPERS
+   =================================================================== */
+const NAME=0, CITY=1, LOC=2, COST=3, RATE=4, VOTES=5, PR=6, DEL=7, BOOK=8, CUS=9;
+const PR_LABEL={1:"1 · Budget",2:"2 · Mid-range",3:"3 · Premium",4:"4 · Luxury"};
+const MIN_VOTES=50, MIN_CITY_N=20, MIN_CUISINE_N=30, MIN_LOC_N=15;
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const fmt=n=>n==null?"—":n.toLocaleString("en-IN");
+const inr=n=>n==null?"—":"₹"+Math.round(n).toLocaleString("en-IN");
+const f1=n=>n==null?"—":n.toFixed(1);
+const f2=n=>n==null?"—":n.toFixed(2);
+const pct=n=>n==null?"—":n.toFixed(1)+"%";
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+const median=a=>{if(!a.length)return null;const b=[...a].sort((x,y)=>x-y),m=b.length>>1;
+  return b.length%2?b[m]:(b[m-1]+b[m])/2;};
+const quant=(a,q)=>{if(!a.length)return null;const b=[...a].sort((x,y)=>x-y);
+  const i=(b.length-1)*q, lo=Math.floor(i), hi=Math.ceil(i);
+  return lo===hi?b[lo]:b[lo]+(b[hi]-b[lo])*(i-lo);};
+const sd=a=>{if(a.length<2)return 0;const m=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/a.length);};
+
+/* "nice" axis maximum so ticks read 0 / 1,000 / 2,000 instead of 0 / 987 / 1,973 */
+function niceMax(v,steps=4){
+  if(!(v>0))return 1;
+  const raw=v/steps, mag=10**Math.floor(Math.log10(raw)), n=raw/mag;
+  const snap=[1,1.5,2,2.5,3,4,5,7.5,10].find(s=>n<=s)||10;
+  return snap*mag*steps;
+}
+
+/* rounded-end bar paths: 4px radius on the DATA end only, square on the baseline */
+function hBar(x,y,w,h,r=4){ r=Math.min(r,Math.max(w,0)); if(w<=0.5) return `M${x},${y}h0`;
+  return `M${x},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h-r}Q${x+w},${y+h} ${x+w-r},${y+h}H${x}Z`;}
+function vBar(x,yTop,w,h,r=4){ r=Math.min(r,Math.max(h,0)); if(h<=0.5) return `M${x},${yTop}h0`;
+  const yb=yTop+h; return `M${x},${yb}V${yTop+r}Q${x},${yTop} ${x+r},${yTop}H${x+w-r}Q${x+w},${yTop} ${x+w},${yTop+r}V${yb}Z`;}
+
+/* ===================================================================
+   1. TOOLTIP LAYER  (every chart mark is hoverable, by default)
+   =================================================================== */
+const tip=$("#tip");
+function showTip(e,html){tip.innerHTML=html;tip.style.opacity=1;moveTip(e);}
+function moveTip(e){const p=12,r=tip.getBoundingClientRect();
+  let x=e.clientX+p,y=e.clientY+p;
+  if(x+r.width>innerWidth-8)x=e.clientX-r.width-p;
+  if(y+r.height>innerHeight-8)y=e.clientY-r.height-p;
+  tip.style.left=x+"px";tip.style.top=y+"px";}
+function hideTip(){tip.style.opacity=0;}
+function bindTips(root){
+  root.querySelectorAll("[data-tip]").forEach(el=>{
+    el.addEventListener("mouseenter",e=>showTip(e,el.dataset.tip));
+    el.addEventListener("mousemove",moveTip);
+    el.addEventListener("mouseleave",hideTip);
+  });
+}
+function tipRows(title,rows){
+  return `<b>${esc(title)}</b>`+rows.map(([k,v])=>`<div class="r"><span>${esc(k)}</span><span>${v}</span></div>`).join("");
+}
+
+/* ===================================================================
+   2. FILTER STATE  (this is what makes it behave like Power BI)
+   =================================================================== */
+const state={city:"",cuisine:"",prices:new Set(),delivery:false,booking:false,
+             ratedOnly:false,credible:false,minRating:0,search:""};
+
+function activeRows(){
+  const q=state.search.trim().toLowerCase();
+  const cityId=state.city===""?-1:DATA.cities.indexOf(state.city);
+  const cusId =state.cuisine===""?-1:DATA.cuisines.indexOf(state.cuisine);
+  return DATA.rows.filter(r=>{
+    if(cityId>=0 && r[CITY]!==cityId) return false;
+    if(cusId>=0 && !r[CUS].includes(cusId)) return false;
+    if(state.prices.size && !state.prices.has(r[PR])) return false;
+    if(state.delivery && r[DEL]!==1) return false;
+    if(state.booking && r[BOOK]!==1) return false;
+    if(state.ratedOnly && r[RATE]==null) return false;
+    if(state.credible && (r[RATE]==null || r[VOTES]<MIN_VOTES)) return false;
+    if(state.minRating>0 && (r[RATE]==null || r[RATE]<state.minRating)) return false;
+    if(q){
+      const nm=r[NAME].toLowerCase(), lc=(DATA.localities[r[LOC]]||"").toLowerCase();
+      if(!nm.includes(q) && !lc.includes(q)) return false;
+    }
+    return true;
+  });
+}
+const anyFilter=()=>state.city||state.cuisine||state.prices.size||state.delivery||
+  state.booking||state.ratedOnly||state.credible||state.minRating>0||state.search.trim();
+
+/* ===================================================================
+   3. MEASURE LAYER  (the JS twin of the DAX measures in docs/POWERBI_GUIDE.md)
+   =================================================================== */
+function measures(rows){
+  const rated=rows.filter(r=>r[RATE]!=null);
+  const costs=rows.map(r=>r[COST]).filter(v=>v!=null);
+  const credible=rated.filter(r=>r[VOTES]>=MIN_VOTES);
+  return {
+    n:rows.length,
+    cities:new Set(rows.map(r=>r[CITY])).size,
+    localities:new Set(rows.map(r=>r[LOC])).size,
+    avgCost:mean(costs),
+    medCost:median(costs),
+    p90Cost:quant(costs,.9),
+    maxCost:costs.length?Math.max(...costs):null,
+    avgRating:mean(rated.map(r=>r[RATE])),
+    ratedN:rated.length,
+    notRatedPct:rows.length?100*(rows.length-rated.length)/rows.length:null,
+    deliveryPct:rows.length?100*rows.filter(r=>r[DEL]===1).length/rows.length:null,
+    bookingPct:rows.length?100*rows.filter(r=>r[BOOK]===1).length/rows.length:null,
+    votes:rows.reduce((s,r)=>s+r[VOTES],0),
+    avgVotes:mean(rows.map(r=>r[VOTES])),
+    cuisines:new Set(rows.flatMap(r=>r[CUS])).size,
+    credibleN:credible.length,
+    top:credible.slice().sort((a,b)=>b[RATE]-a[RATE]||b[VOTES]-a[VOTES])[0]||null,
+    priciest:rows.filter(r=>r[COST]!=null).sort((a,b)=>b[COST]-a[COST])[0]||null
+  };
+}
+
+/* group helper: returns [{key, rows}] sorted by a chosen accessor */
+function groupBy(rows,keyFn){
+  const m=new Map();
+  rows.forEach(r=>{const k=keyFn(r); if(k==null)return; (m.get(k)||m.set(k,[]).get(k)).push(r);});
+  return [...m.entries()].map(([key,rs])=>({key,rows:rs}));
+}
+
+/* ===================================================================
+   4. CHART PRIMITIVES  (vanilla SVG — no CDN, works offline from file://)
+   =================================================================== */
+
+/* 4a. Horizontal bar chart — the default for ranked categories */
+function drawHBar(el,items,opt={}){
+  const W=opt.width||el.clientWidth||560, rowH=opt.rowH||26, gap=2;
+  const padL=opt.padL||150, padR=opt.padR||62, padT=8, padB=opt.padB||22;
+  const H=padT+items.length*rowH+padB;
+  const raw=Math.max(...items.map(d=>d.value),0)||1;
+  const max=opt.niceAxis===false?raw:niceMax(raw);
+  const plotW=Math.max(W-padL-padR,10);
+  const color=opt.color||"var(--s1)";
+  let ticks="";
+  if(opt.grid!==false){
+    for(let t=0;t<=4;t++){const v=max*t/4,x=padL+plotW*t/4;
+      ticks+=`<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT+items.length*rowH}" stroke="var(--grid)" stroke-width="1"/>
+              <text class="axistext" x="${x}" y="${H-6}" text-anchor="middle">${opt.tickFmt?opt.tickFmt(v):fmt(Math.round(v))}</text>`;}
+  }
+  const bars=items.map((d,i)=>{
+    const y=padT+i*rowH+gap/2, h=rowH-gap*2, w=plotW*d.value/max;
+    const c=d.color||color;
+    return `<g${opt.clickKey?` style="cursor:pointer" data-click="${esc(d.key??d.label)}"`:""} data-tip='${esc(d.tip||tipRows(d.label,[[opt.valueName||"Value",opt.fmt?opt.fmt(d.value):fmt(d.value)]]))}'>
+      <rect x="0" y="${padT+i*rowH}" width="${W}" height="${rowH}" fill="transparent"/>
+      <text class="serieslabel" x="${padL-10}" y="${y+h/2+4}" text-anchor="end">${esc(d.label)}</text>
+      <path d="${hBar(padL,y,w,h,4)}" fill="${c}"/>
+      <text class="vallabel" x="${padL+w+8}" y="${y+h/2+4}">${opt.fmt?opt.fmt(d.value):fmt(d.value)}</text>
+    </g>`;}).join("");
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.aria||"bar chart")}">
+    ${ticks}<line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+items.length*rowH}" stroke="var(--axis)" stroke-width="1"/>
+    ${bars}</svg>`;
+  bindTips(el);
+  if(opt.clickKey) el.querySelectorAll("[data-click]").forEach(g=>
+    g.addEventListener("click",()=>opt.clickKey(g.dataset.click)));
+}
+
+/* 4b. Vertical bar chart — for an ordered scale like a rating histogram */
+function drawVBar(el,items,opt={}){
+  const W=opt.width||el.clientWidth||420, H=opt.height||240;
+  const padL=46,padR=10,padT=16,padB=42;
+  const max=niceMax(Math.max(...items.map(d=>d.value),0)||1);
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const band=plotW/items.length, bw=Math.max(band-6,4);
+  let grid="";
+  for(let t=0;t<=4;t++){const v=max*t/4,y=padT+plotH-plotH*t/4;
+    grid+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>
+           <text class="axistext" x="${padL-8}" y="${y+4}" text-anchor="end">${fmt(Math.round(v))}</text>`;}
+  const bars=items.map((d,i)=>{
+    const h=plotH*d.value/max, x=padL+i*band+(band-bw)/2, y=padT+plotH-h;
+    return `<g data-tip='${esc(d.tip||tipRows(d.label,[["Restaurants",fmt(d.value)]]))}'>
+      <rect x="${padL+i*band}" y="${padT}" width="${band}" height="${plotH}" fill="transparent"/>
+      <path d="${vBar(x,y,bw,h,4)}" fill="${d.color||opt.color||"var(--s1)"}"/>
+      ${d.value>0?`<text class="vallabel" x="${x+bw/2}" y="${y-6}" text-anchor="middle">${fmt(d.value)}</text>`:""}
+      <text class="axistext" x="${padL+i*band+band/2}" y="${H-24}" text-anchor="middle">${esc(d.label)}</text>
+    </g>`;}).join("");
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.aria||"column chart")}">
+    ${grid}<line x1="${padL}" y1="${padT+plotH}" x2="${W-padR}" y2="${padT+plotH}" stroke="var(--axis)" stroke-width="1"/>
+    ${bars}<text class="axistext" x="${padL+plotW/2}" y="${H-6}" text-anchor="middle">${esc(opt.xTitle||"")}</text></svg>`;
+  bindTips(el);
+}
+
+/* 4c. Line chart with markers — for an ordered band -> value relationship */
+function drawLine(el,items,opt={}){
+  const W=opt.width||el.clientWidth||520, H=opt.height||250;
+  const padL=48,padR=18,padT=18,padB=46;
+  const vals=items.map(d=>d.value).filter(v=>v!=null);
+  let lo=opt.min!=null?opt.min:Math.min(...vals), hi=opt.max!=null?opt.max:Math.max(...vals);
+  const padv=(hi-lo)*.18||.2; lo-=padv; hi+=padv;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const X=i=>padL+(items.length===1?plotW/2:plotW*i/(items.length-1));
+  const Y=v=>padT+plotH-plotH*(v-lo)/(hi-lo);
+  let grid="";
+  for(let t=0;t<=4;t++){const v=lo+(hi-lo)*t/4,y=Y(v);
+    grid+=`<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="var(--grid)" stroke-width="1"/>
+           <text class="axistext" x="${padL-8}" y="${y+4}" text-anchor="end">${v.toFixed(2)}</text>`;}
+  const pts=items.map((d,i)=>d.value==null?null:[X(i),Y(d.value)]).filter(Boolean);
+  const path=pts.map((p,i)=>(i?"L":"M")+p[0]+","+p[1]).join(" ");
+  const marks=items.map((d,i)=>d.value==null?"":`
+    <g data-tip='${esc(d.tip||tipRows(d.label,[["Avg rating",f2(d.value)]]))}'>
+      <circle cx="${X(i)}" cy="${Y(d.value)}" r="11" fill="transparent"/>
+      <circle cx="${X(i)}" cy="${Y(d.value)}" r="5" fill="var(--s1)" stroke="var(--surface-1)" stroke-width="2"/>
+      <text class="vallabel" x="${X(i)}" y="${Y(d.value)-12}" text-anchor="middle">${f2(d.value)}</text>
+    </g>`).join("");
+  const xl=items.map((d,i)=>`<text class="axistext" x="${X(i)}" y="${padT+plotH+18}" text-anchor="middle">${esc(d.label)}</text>`).join("");
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.aria||"line chart")}">
+    ${grid}<line x1="${padL}" y1="${padT+plotH}" x2="${W-padR}" y2="${padT+plotH}" stroke="var(--axis)" stroke-width="1"/>
+    <path d="${path}" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round"/>
+    ${marks}${xl}
+    <text class="axistext" x="${padL+plotW/2}" y="${H-6}" text-anchor="middle">${esc(opt.xTitle||"")}</text></svg>`;
+  bindTips(el);
+}
+
+/* 4d. Scatter — magnitude by area, ordinal shade by tier */
+function drawScatter(el,pts,opt={}){
+  const W=opt.width||el.clientWidth||520, H=opt.height||300;
+  const padL=52,padR=16,padT=14,padB=46;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+  const x0=opt.xMin!=null?opt.xMin:Math.min(...xs), x1=opt.xMax!=null?opt.xMax:Math.max(...xs);
+  const y0=opt.yMin!=null?opt.yMin:Math.min(...ys), y1=opt.yMax!=null?opt.yMax:Math.max(...ys);
+  const X=v=>padL+plotW*(v-x0)/((x1-x0)||1);
+  const Y=v=>padT+plotH-plotH*(v-y0)/((y1-y0)||1);
+  let grid="";
+  for(let t=0;t<=4;t++){
+    const yv=y0+(y1-y0)*t/4, xv=x0+(x1-x0)*t/4;
+    grid+=`<line x1="${padL}" y1="${Y(yv)}" x2="${W-padR}" y2="${Y(yv)}" stroke="var(--grid)" stroke-width="1"/>
+           <text class="axistext" x="${padL-8}" y="${Y(yv)+4}" text-anchor="end">${opt.yFmt?opt.yFmt(yv):Math.round(yv)}</text>
+           <text class="axistext" x="${X(xv)}" y="${padT+plotH+18}" text-anchor="middle">${opt.xFmt?opt.xFmt(xv):Math.round(xv)}</text>`;}
+  let refs="";
+  if(opt.refX!=null) refs+=`<line x1="${X(opt.refX)}" y1="${padT}" x2="${X(opt.refX)}" y2="${padT+plotH}" stroke="var(--axis)" stroke-width="1" stroke-dasharray="4 3"/>`;
+  if(opt.refY!=null) refs+=`<line x1="${padL}" y1="${Y(opt.refY)}" x2="${W-padR}" y2="${Y(opt.refY)}" stroke="var(--axis)" stroke-width="1" stroke-dasharray="4 3"/>`;
+  /* Ranked points get a numeral INSIDE the marker instead of a floating text
+     label. Direct labels collide badly in a dense scatter; a numeral keyed to
+     the ranked table beside the chart carries the same information with zero
+     overlap. */
+  const dots=pts.filter(p=>!p.rank).map(p=>`<circle cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="${(p.r||4).toFixed(1)}"
+      fill="${p.color||"var(--ord2)"}" fill-opacity="${opt.opacity||.72}"
+      stroke="var(--surface-1)" stroke-width="2" data-tip='${esc(p.tip)}'/>`).join("")
+    + pts.filter(p=>p.rank).sort((a,b)=>b.rank-a.rank).map(p=>`<g data-tip='${esc(p.tip)}'>
+        <circle cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="${Math.max(p.r||4,10).toFixed(1)}"
+          fill="${p.color||"var(--s2)"}" stroke="var(--surface-1)" stroke-width="2"/>
+        <text x="${X(p.x).toFixed(1)}" y="${(Y(p.y)+3.5).toFixed(1)}" text-anchor="middle"
+          style="font-size:11px;font-weight:700;fill:#fff">${p.rank}</text></g>`).join("");
+  /* Direct labels with simple collision avoidance: sort by y, then push each
+     label down until it clears the previous one. Halo (paint-order) keeps the
+     text legible where it crosses a mark. */
+  const placed=[];
+  const labels=(opt.labels||[]).map(l=>({...l,px:X(l.x),py:Y(l.y)}))
+    .sort((a,b)=>a.py-b.py).map(l=>{
+      let y=l.py+4;
+      placed.forEach(p=>{ if(Math.abs(y-p.y)<14) y=p.y+14; });
+      placed.push({x:l.px,y});
+      return `<line x1="${l.px+6}" y1="${l.py}" x2="${l.px+11}" y2="${y-4}" stroke="var(--axis)" stroke-width="1"/>
+              <text class="vallabel" x="${l.px+13}" y="${y}" style="paint-order:stroke"
+                    stroke="var(--surface-1)" stroke-width="3">${esc(l.text)}</text>`;}).join("");
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.aria||"scatter plot")}">
+    ${grid}${refs}
+    <line x1="${padL}" y1="${padT+plotH}" x2="${W-padR}" y2="${padT+plotH}" stroke="var(--axis)" stroke-width="1"/>
+    <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${padT+plotH}" stroke="var(--axis)" stroke-width="1"/>
+    ${dots}${labels}
+    <text class="axistext" x="${padL+plotW/2}" y="${H-6}" text-anchor="middle">${esc(opt.xTitle||"")}</text>
+    <text class="axistext" x="${12}" y="${padT+plotH/2}" text-anchor="middle" transform="rotate(-90 12 ${padT+plotH/2})">${esc(opt.yTitle||"")}</text>
+  </svg>`;
+  bindTips(el);
+}
+
+/* 4d-bis. Dot plot — the RIGHT form when you are comparing averages inside a
+   narrow range (3.6 to 4.0). A zero-based bar makes those bars look identical;
+   a bar that does NOT start at zero lies about the ratio. A dot plot on a
+   zoomed axis is the honest third option, with the market average as a
+   reference line so the reader keeps a baseline. */
+function drawDotPlot(el,items,opt={}){
+  const W=opt.width||el.clientWidth||520, rowH=opt.rowH||25;
+  const padL=opt.padL||118, padR=52, padT=20, padB=30;
+  const H=padT+items.length*rowH+padB;
+  /* The reference line must be INSIDE the domain, otherwise its connector
+     lines run off-plot and strike through the category labels. */
+  const vals=items.map(d=>d.value).concat(opt.ref!=null?[opt.ref]:[]);
+  let lo=Math.min(...vals), hi=Math.max(...vals);
+  const pad=(hi-lo)*.10||.1; lo=Math.max(0,lo-pad); hi+=pad;
+  const plotW=W-padL-padR, X=v=>padL+plotW*(v-lo)/((hi-lo)||1);
+  let grid="";
+  for(let t=0;t<=4;t++){const v=lo+(hi-lo)*t/4;
+    grid+=`<line x1="${X(v)}" y1="${padT}" x2="${X(v)}" y2="${padT+items.length*rowH}" stroke="var(--grid)" stroke-width="1"/>
+           <text class="axistext" x="${X(v)}" y="${H-12}" text-anchor="middle">${v.toFixed(2)}</text>`;}
+  const ref=opt.ref!=null?`
+    <line x1="${X(opt.ref)}" y1="${padT}" x2="${X(opt.ref)}" y2="${padT+items.length*rowH}"
+          stroke="var(--axis)" stroke-width="1" stroke-dasharray="4 3"/>
+    <text class="axistext" x="${X(opt.ref)}" y="${padT-1}" text-anchor="middle">market avg ${opt.ref.toFixed(2)}</text>`:"";
+  const marks=items.map((d,i)=>{
+    const y=padT+i*rowH+rowH/2;
+    const base=opt.ref!=null?X(opt.ref):padL;
+    return `<g${opt.clickKey?` style="cursor:pointer" data-click="${esc(d.key??d.label)}"`:""} data-tip='${esc(d.tip)}'>
+      <rect x="0" y="${y-rowH/2}" width="${W}" height="${rowH}" fill="transparent"/>
+      <text class="serieslabel" x="${padL-10}" y="${y+4}" text-anchor="end">${esc(d.label)}</text>
+      <line x1="${base}" y1="${y}" x2="${X(d.value)}" y2="${y}" stroke="var(--grid)" stroke-width="2"/>
+      <circle cx="${X(d.value)}" cy="${y}" r="5.5" fill="${d.color||opt.color||"var(--s3)"}" stroke="var(--surface-1)" stroke-width="2"/>
+      <text class="vallabel" x="${X(d.value)+11}" y="${y+4}">${d.value.toFixed(2)}</text>
+    </g>`;}).join("");
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(opt.aria||"dot plot")}">
+    ${grid}${ref}${marks}
+    <text class="axistext" x="${padL+plotW/2}" y="${H-1}" text-anchor="middle">${esc(opt.xTitle||"")}</text></svg>`;
+  bindTips(el);
+  if(opt.clickKey) el.querySelectorAll("[data-click]").forEach(g=>
+    g.addEventListener("click",()=>opt.clickKey(g.dataset.click)));
+}
+
+/* 4e. Meter row — share-of-total, one bar per service */
+function drawMeters(el,items){
+  el.innerHTML=items.map(d=>`
+    <div style="margin:10px 0 14px" data-tip='${esc(d.tip)}'>
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px">
+        <span style="color:var(--ink-2)">${esc(d.label)}</span>
+        <b style="font-variant-numeric:tabular-nums">${pct(d.value)}</b></div>
+      <svg viewBox="0 0 300 10" height="10" preserveAspectRatio="none">
+        <path d="${hBar(0,0,300,10,4)}" fill="var(--grid)"/>
+        <path d="${hBar(0,0,300*Math.max(d.value,0)/100,10,4)}" fill="${d.color}"/>
+      </svg>
+      <div style="font-size:11.5px;color:var(--ink-muted);margin-top:3px">${esc(d.note)}</div>
+    </div>`).join("");
+  bindTips(el);
+}
+
+/* 4f. Table renderer with in-cell data bars */
+function drawTable(el,cols,rows,opt={}){
+  const head=`<tr>${cols.map(c=>`<th class="${c.num?"num":""}">${esc(c.h)}</th>`).join("")}</tr>`;
+  const body=rows.map((r,i)=>`<tr${opt.click?` style="cursor:pointer" data-k="${esc(opt.click.key(r))}"`:""}>`+
+    cols.map(c=>{
+      const v=c.get(r,i);
+      if(c.bar){const p=Math.max(0,Math.min(100,c.bar(r)));
+        return `<td class="num databar"><span class="bg" style="width:${p}%"></span><span class="tx">${v}</span></td>`;}
+      return `<td class="${c.num?"num":""}"${c.title?` title="${esc(c.title(r))}"`:""}>${v}</td>`;
+    }).join("")+"</tr>").join("");
+  el.innerHTML=`<table>${head}${body}</table>`;
+  if(opt.click) el.querySelectorAll("[data-k]").forEach(tr=>tr.addEventListener("click",()=>opt.click.fn(tr.dataset.k)));
+}
+
+/* ===================================================================
+   5. PAGE RENDERERS
+   =================================================================== */
+function kpiTile(k,v,d){return `<div class="tile"><span class="k">${k}</span><span class="v">${v}</span><span class="d">${d}</span></div>`;}
+
+function renderKPIs(rows){
+  const m=measures(rows);
+  $("#kpiStrip").innerHTML=[
+    kpiTile("Restaurants",fmt(m.n),`<strong>${fmt(m.cities)}</strong> cities · <strong>${fmt(m.localities)}</strong> localities`),
+    kpiTile("Avg cost for two",inr(m.avgCost),`median <strong>${inr(m.medCost)}</strong> · P90 <strong>${inr(m.p90Cost)}</strong>`),
+    kpiTile("Avg rating",f2(m.avgRating),`<strong>${fmt(m.ratedN)}</strong> rated venues only`),
+    kpiTile("Not rated",pct(m.notRatedPct),`cold-start venues, zero reviews`),
+    kpiTile("Online delivery",pct(m.deliveryPct),`table booking <strong>${pct(m.bookingPct)}</strong>`),
+    kpiTile("Total votes",fmt(m.votes),`<strong>${fmt(Math.round(m.avgVotes))}</strong> per restaurant`),
+    kpiTile("Cuisines offered",fmt(m.cuisines),`<strong>${f2(mean(rows.map(r=>r[CUS].length)))}</strong> per restaurant`),
+    kpiTile("Highest rated",m.top?f1(m.top[RATE]):"—",m.top?`<strong>${esc(m.top[NAME])}</strong>`:"none with 50+ votes"),
+  ].join("");
+  $("#kpiStrip").style.gridTemplateColumns="repeat(4,1fr)";
+  if(innerWidth>1180) $("#kpiStrip").style.gridTemplateColumns="repeat(8,1fr)";
+  else if(innerWidth<720) $("#kpiStrip").style.gridTemplateColumns="repeat(2,1fr)";
+  $("#kpiStrip2").innerHTML=[
+    kpiTile("Avg cost for two",inr(m.avgCost),`skew is right-tailed, so read the median too`),
+    kpiTile("Median cost",inr(m.medCost),`half of venues cost less than this`),
+    kpiTile("P90 cost",inr(m.p90Cost),`only 10% of venues charge more`),
+    kpiTile("Most expensive",inr(m.priciest?m.priciest[COST]:null),m.priciest?`<strong>${esc(m.priciest[NAME])}</strong>`:"—"),
+    kpiTile("Cost vs rating r",f2(STATS.pearson_cost_rating),`weak positive · n=${fmt(STATS.n_for_correlation)} (unfiltered)`),
+    kpiTile("Credible sample",fmt(m.credibleN),`rated venues with 50+ votes`),
+  ].join("");
+  return m;
+}
+
+function renderOverview(rows){
+  const m=renderKPIs(rows);
+
+  /* rating histogram */
+  const bands=[[1,1.5],[1.5,2],[2,2.5],[2.5,3],[3,3.5],[3.5,4],[4,4.5],[4.5,5.01]];
+  const rated=rows.filter(r=>r[RATE]!=null);
+  const hist=bands.map(([a,b])=>{
+    const n=rated.filter(r=>r[RATE]>=a&&r[RATE]<b).length;
+    const lbl=a.toFixed(1)+"–"+(b>5?5:b).toFixed(1);
+    return {label:lbl,value:n,
+      tip:tipRows("Rating "+lbl,[["Restaurants",fmt(n)],["Share of rated",rated.length?pct(100*n/rated.length):"—"]])};
+  });
+  drawVBar($("#chRatingDist"),hist,{height:250,xTitle:"Aggregate rating band",aria:"Distribution of restaurant ratings"});
+
+  /* price mix */
+  const prg=[1,2,3,4].map(p=>{
+    const g=rows.filter(r=>r[PR]===p), gr=g.filter(r=>r[RATE]!=null);
+    return {label:PR_LABEL[p],value:g.length,color:`var(--ord${p})`,
+      rating:mean(gr.map(r=>r[RATE])),cost:mean(g.map(r=>r[COST]).filter(v=>v!=null)),
+      del:g.length?100*g.filter(r=>r[DEL]===1).length/g.length:0,
+      book:g.length?100*g.filter(r=>r[BOOK]===1).length/g.length:0};
+  });
+  const prMax=Math.max(...prg.map(d=>d.value),1);
+  $("#chPriceMix").innerHTML=`<div style="display:grid;grid-template-columns:1fr;gap:8px">`+
+    prg.map(d=>`<div data-tip='${esc(tipRows(d.label,[["Restaurants",fmt(d.value)],["Share",pct(100*d.value/(rows.length||1))],
+        ["Avg rating",f2(d.rating)],["Avg cost",inr(d.cost)],["Online delivery",pct(d.del)],["Table booking",pct(d.book)]]))}'
+      style="display:grid;grid-template-columns:104px 1fr 118px;gap:10px;align-items:center">
+      <span style="font-size:12.5px;color:var(--ink-2)">${d.label}</span>
+      <svg viewBox="0 0 300 18" height="18" preserveAspectRatio="none">
+        <path d="${hBar(0,2,300*d.value/prMax,14,4)}" fill="${d.color}"/></svg>
+      <span style="font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums">
+        <b style="color:var(--ink-1)">${fmt(d.value)}</b> · ★ ${f2(d.rating)} · ${inr(d.cost)}</span>
+    </div>`).join("")+`</div>
+    <p class="legend"><span><i style="background:var(--ord1)"></i>Budget</span><span><i style="background:var(--ord2)"></i>Mid-range</span>
+    <span><i style="background:var(--ord3)"></i>Premium</span><span><i style="background:var(--ord4)"></i>Luxury</span></p>`;
+  bindTips($("#chPriceMix"));
+
+  /* top cities */
+  const byCity=groupBy(rows,r=>r[CITY]).map(g=>{
+    const rr=g.rows.filter(r=>r[RATE]!=null);
+    return {key:DATA.cities[g.key],label:DATA.cities[g.key],value:g.rows.length,
+      rating:mean(rr.map(r=>r[RATE])),cost:mean(g.rows.map(r=>r[COST]).filter(v=>v!=null))};
+  }).sort((a,b)=>b.value-a.value).slice(0,12);
+  byCity.forEach(d=>d.tip=tipRows(d.label,[["Restaurants",fmt(d.value)],["Avg rating",f2(d.rating)],["Avg cost for two",inr(d.cost)],["",'<i>click to filter</i>']]));
+  drawHBar($("#chCities"),byCity,{padL:110,rowH:25,valueName:"Restaurants",
+    aria:"Top cities by restaurant count",clickKey:c=>{state.city=state.city===c?"":c;$("#fCity").value=state.city;render();}});
+
+  /* services */
+  drawMeters($("#chService"),[
+    {label:"Online delivery",value:m.deliveryPct,color:"var(--s1)",
+     note:`${fmt(rows.filter(r=>r[DEL]===1).length)} of ${fmt(rows.length)} restaurants`,
+     tip:tipRows("Online delivery",[["Restaurants",fmt(rows.filter(r=>r[DEL]===1).length)],["Share",pct(m.deliveryPct)]])},
+    {label:"Table booking",value:m.bookingPct,color:"var(--s2)",
+     note:`${fmt(rows.filter(r=>r[BOOK]===1).length)} of ${fmt(rows.length)} restaurants`,
+     tip:tipRows("Table booking",[["Restaurants",fmt(rows.filter(r=>r[BOOK]===1).length)],["Share",pct(m.bookingPct)]])},
+    {label:"Has at least one rating",value:100-m.notRatedPct,color:"var(--s3)",
+     note:`${fmt(m.ratedN)} rated · ${fmt(rows.length-m.ratedN)} never rated`,
+     tip:tipRows("Rated venues",[["Rated",fmt(m.ratedN)],["Not rated",fmt(rows.length-m.ratedN)]])},
+    {label:"Credible rating (50+ votes)",value:rows.length?100*m.credibleN/rows.length:0,color:"var(--s4)",
+     note:`${fmt(m.credibleN)} venues you can safely rank`,
+     tip:tipRows("Credible ratings",[["Venues",fmt(m.credibleN)]])},
+  ]);
+
+  /* insights */
+  const budgetShare=rows.length?100*rows.filter(r=>r[PR]<=2).length/rows.length:0;
+  $("#insOverview").innerHTML=`
+    <div class="insight"><h4>The market is a budget market</h4><p>
+      <b>${pct(budgetShare)}</b> of restaurants sit in price tiers 1–2, and the median cost for two is
+      <b>${inr(m.medCost)}</b> against a mean of <b>${inr(m.avgCost)}</b>. The mean sits above the median because a
+      small luxury tail (P90 = ${inr(m.p90Cost)}) pulls it up — quote the <b>median</b> when you benchmark a new opening,
+      not the mean.</p></div>
+    <div class="insight warn"><h4>A quarter of the market has no rating at all</h4><p>
+      <b>${pct(m.notRatedPct)}</b> of listings have never been rated. Treating those as “0 stars” would have reported an
+      average rating of <b>${f2(REFERENCE.avg_rating_if_zeros_kept)}</b> instead of the correct
+      <b>${f2(REFERENCE.avg_rating)}</b> — a ${f2(Math.abs(REFERENCE.rating_bias_avoided))}-star error. Commercially, these
+      are cold-start venues: the fastest revenue lever is getting their first 50 reviews.</p></div>
+    <div class="insight good"><h4>Rating is scarce currency above 4.0</h4><p>
+      Only <b>${fmt(rated.filter(r=>r[RATE]>=4).length)}</b> of ${fmt(rated.length)} rated venues
+      (<b>${rated.length?pct(100*rated.filter(r=>r[RATE]>=4).length/rated.length):"—"}</b>) clear 4.0.
+      A 4.0+ badge is a real differentiator, not table stakes.</p></div>`;
+}
+
+function renderCost(rows){
+  renderKPIs(rows);
+  const credible=rows.filter(r=>r[RATE]!=null&&r[VOTES]>=MIN_VOTES&&r[COST]!=null);
+
+  /* cost band -> avg rating */
+  const cb=[[0,200,"<200"],[200,400,"200–400"],[400,600,"400–600"],[600,800,"600–800"],
+            [800,1200,"800–1200"],[1200,1600,"1200–1600"],[1600,2400,"1600–2400"],[2400,1e9,"2400+"]];
+  const trend=cb.map(([a,b,l])=>{
+    const g=credible.filter(r=>r[COST]>=a&&r[COST]<b);
+    return {label:l,value:g.length?mean(g.map(r=>r[RATE])):null,
+      tip:tipRows("₹"+l+" for two",[["Avg rating",g.length?f2(mean(g.map(r=>r[RATE]))):"—"],["Restaurants",fmt(g.length)]])};
+  });
+  drawLine($("#chCostTrend"),trend,{height:260,xTitle:"Average cost for two (₹)",aria:"Average rating by cost band"});
+
+  /* scatter */
+  const sample=credible.filter(r=>r[COST]<=4000);
+  const step=Math.max(1,Math.ceil(sample.length/900));
+  const pts=sample.filter((_,i)=>i%step===0).map(r=>({
+    x:r[COST],y:r[RATE],r:Math.min(11,3+Math.sqrt(r[VOTES])/9),
+    color:`var(--ord${r[PR]})`,
+    tip:tipRows(r[NAME],[["City",DATA.cities[r[CITY]]],["Locality",DATA.localities[r[LOC]]],
+      ["Cost for two",inr(r[COST])],["Rating",f1(r[RATE])],["Votes",fmt(r[VOTES])],["Tier",PR_LABEL[r[PR]]]])}));
+  drawScatter($("#chScatter"),pts,{height:300,xMin:0,xMax:4000,yMin:1.8,yMax:5,
+    xTitle:"Average cost for two (₹)",yTitle:"Aggregate rating",xFmt:v=>"₹"+Math.round(v),yFmt:v=>v.toFixed(1),
+    aria:"Cost for two versus aggregate rating"});
+  $("#chScatter").insertAdjacentHTML("beforeend",
+    `<p class="legend"><span><i style="background:var(--ord1)"></i>Budget</span><span><i style="background:var(--ord2)"></i>Mid-range</span>
+     <span><i style="background:var(--ord3)"></i>Premium</span><span><i style="background:var(--ord4)"></i>Luxury</span>
+     <span style="color:var(--ink-muted)">marker area ∝ votes · ${fmt(pts.length)} of ${fmt(sample.length)} plotted</span></p>`);
+
+  /* tables */
+  const exp=rows.filter(r=>r[COST]!=null).sort((a,b)=>b[COST]-a[COST]).slice(0,15);
+  const maxCost=exp.length?exp[0][COST]:1;
+  drawTable($("#tblExpensive"),[
+    {h:"#",get:(r,i)=>`<span class="rank">${i+1}</span>`},
+    {h:"Restaurant",get:r=>esc(r[NAME]),title:r=>r[NAME]},
+    {h:"City",get:r=>esc(DATA.cities[r[CITY]])},
+    {h:"Cost for two",num:true,get:r=>inr(r[COST]),bar:r=>100*r[COST]/maxCost},
+    {h:"Rating",num:true,get:r=>f1(r[RATE])},
+  ],exp);
+
+  const val=rows.filter(r=>r[RATE]!=null&&r[RATE]>=4&&r[VOTES]>=MIN_VOTES&&r[COST]>0)
+    .map(r=>({r,v:r[RATE]/(r[COST]/100)})).sort((a,b)=>b.v-a.v).slice(0,15);
+  const maxV=val.length?val[0].v:1;
+  drawTable($("#tblValue"),[
+    {h:"#",get:(r,i)=>`<span class="rank">${i+1}</span>`},
+    {h:"Restaurant",get:o=>esc(o.r[NAME]),title:o=>o.r[NAME]},
+    {h:"Locality",get:o=>esc(DATA.localities[o.r[LOC]])},
+    {h:"Cost",num:true,get:o=>inr(o.r[COST])},
+    {h:"★",num:true,get:o=>f1(o.r[RATE])},
+    {h:"★/₹100",num:true,get:o=>o.v.toFixed(2),bar:o=>100*o.v/maxV},
+  ],val);
+
+  const cheap=credible.filter(r=>r[COST]<400), lux=credible.filter(r=>r[COST]>=1600);
+  $("#insCost").innerHTML=`
+    <div class="insight"><h4>Price buys a little quality, not a lot</h4><p>
+      Pearson r between cost for two and rating is <b>${f2(STATS.pearson_cost_rating)}</b>
+      (Spearman <b>${f2(STATS.spearman_cost_rating)}</b>) across ${fmt(STATS.n_for_correlation)} credibly-rated venues.
+      That is a weak positive: the average ₹1,600+ venue rates
+      <b>${lux.length?f2(mean(lux.map(r=>r[RATE]))):"—"}</b> versus
+      <b>${cheap.length?f2(mean(cheap.map(r=>r[RATE]))):"—"}</b> under ₹400 — roughly half a star for 4× the price.
+      Price is not the quality lever; execution is.</p></div>
+    <div class="insight warn"><h4>Read the &lt;₹200 point with suspicion</h4><p>
+      The cheapest band looks excellent, but it only contains venues that already earned 50+ votes.
+      Cheap places that nobody reviewed are filtered out, so this point suffers survivorship bias.
+      It is a genuine finding about <i>famous</i> street food, not about cheap food in general.</p></div>
+    <div class="insight good"><h4>Where the value actually is</h4><p>
+      The best rating-per-rupee venues are Old Delhi street-food institutions charging ₹50–₹150 for two while holding
+      4.0–4.3 ratings. For an operator, that is the proof that a tight, cheap, single-dish menu can out-rate a ₹2,000 multi-cuisine kitchen.</p></div>`;
+}
+
+function renderCuisine(rows){
+  /* cuisine volume */
+  const cnt=new Map(), rate=new Map(), cost=new Map();
+  rows.forEach(r=>r[CUS].forEach(c=>{
+    cnt.set(c,(cnt.get(c)||0)+1);
+    if(r[RATE]!=null)(rate.get(c)||rate.set(c,[]).get(c)).push(r[RATE]);
+    if(r[COST]!=null)(cost.get(c)||cost.set(c,[]).get(c)).push(r[COST]);
+  }));
+  const cus=[...cnt.entries()].map(([c,n])=>({
+    key:DATA.cuisines[c],label:DATA.cuisines[c],value:n,
+    rating:mean(rate.get(c)||[]),cost:mean(cost.get(c)||[])}));
+
+  const vol=cus.slice().sort((a,b)=>b.value-a.value).slice(0,14);
+  vol.forEach(d=>d.tip=tipRows(d.label,[["Restaurants",fmt(d.value)],["Avg rating",f2(d.rating)],["Avg cost for two",inr(d.cost)],["",'<i>click to filter</i>']]));
+  drawHBar($("#chCuisineVol"),vol,{padL:118,rowH:24,valueName:"Restaurants",
+    aria:"Most common cuisines",clickKey:c=>{state.cuisine=state.cuisine===c?"":c;$("#fCuisine").value=state.cuisine;render();}});
+
+  const qual=cus.filter(d=>d.value>=MIN_CUISINE_N&&d.rating!=null).sort((a,b)=>b.rating-a.rating).slice(0,12);
+  qual.forEach(d=>d.tip=tipRows(d.label,[["Avg rating",f2(d.rating)],["Restaurants",fmt(d.value)],["Avg cost for two",inr(d.cost)],["",'<i>click to filter</i>']]));
+  const ratedAll=rows.filter(r=>r[RATE]!=null);
+  drawDotPlot($("#chCuisineRate"),qual.map(d=>({...d,value:d.rating})),{
+    padL:118,rowH:25,color:"var(--s3)",ref:mean(ratedAll.map(r=>r[RATE])),
+    xTitle:"Average aggregate rating",aria:"Highest rated cuisines, dot plot",
+    clickKey:c=>{state.cuisine=state.cuisine===c?"":c;$("#fCuisine").value=state.cuisine;render();}});
+
+  /* city benchmark */
+  const cityRows=groupBy(rows,r=>r[CITY]).map(g=>{
+    const rr=g.rows.filter(r=>r[RATE]!=null);
+    return {city:DATA.cities[g.key],n:g.rows.length,
+      rating:mean(rr.map(r=>r[RATE])),cost:mean(g.rows.map(r=>r[COST]).filter(v=>v!=null)),
+      med:median(g.rows.map(r=>r[COST]).filter(v=>v!=null)),
+      del:100*g.rows.filter(r=>r[DEL]===1).length/g.rows.length,
+      book:100*g.rows.filter(r=>r[BOOK]===1).length/g.rows.length,
+      votes:g.rows.reduce((s,r)=>s+r[VOTES],0)};
+  }).filter(d=>d.n>=MIN_CITY_N).sort((a,b)=>b.n-a.n);
+  const maxN=cityRows.length?cityRows[0].n:1;
+  drawTable($("#tblCity"),[
+    {h:"City",get:d=>esc(d.city)},
+    {h:"Restaurants",num:true,get:d=>fmt(d.n),bar:d=>100*d.n/maxN},
+    {h:"Avg cost for two",num:true,get:d=>inr(d.cost)},
+    {h:"Median cost",num:true,get:d=>inr(d.med)},
+    {h:"Avg rating",num:true,get:d=>f2(d.rating)},
+    {h:"Online delivery",num:true,get:d=>pct(d.del)},
+    {h:"Table booking",num:true,get:d=>pct(d.book)},
+    {h:"Total votes",num:true,get:d=>fmt(d.votes)},
+  ],cityRows,{click:{key:d=>d.city,fn:c=>{state.city=state.city===c?"":c;$("#fCity").value=state.city;render();}}});
+
+  const ni=cus.find(d=>d.label==="North Indian"), it=cus.find(d=>d.label==="Italian");
+  const NCR=["New Delhi","Gurgaon","Noida","Faridabad","Ghaziabad"];
+  const ncr=cityRows.filter(d=>NCR.includes(d.city)), t2=cityRows.filter(d=>!NCR.includes(d.city));
+  const ncrIns=(ncr.length&&t2.length)?`
+    <div class="insight crit"><h4>The finding that surprises people: NCR rates lower than everywhere else</h4><p>
+      The ${fmt(ncr.length)} Delhi-NCR cities average <b>${f2(mean(ncr.map(d=>d.rating)))}</b> stars;
+      the ${fmt(t2.length)} other benchmarked cities average <b>${f2(mean(t2.map(d=>d.rating)))}</b>.
+      Two readings, and you should say both out loud: NCR is the saturated market where competition compresses
+      ratings, <i>and</i> NCR is where Zomato had the deepest coverage, so it also lists the long tail of
+      small venues that other cities never got listed. Selection effect and competition effect point the same way —
+      which is exactly why I benchmark pricing <b>within</b> a city, never across them.</p></div>`:"";
+  $("#insCuisine").innerHTML=ncrIns+`
+    <div class="insight"><h4>Supply is concentrated, quality is not</h4><p>
+      <b>${STATS.top3_cuisines.join(", ")}</b> appear on the menu of <b>${pct(STATS.top3_cuisine_share_pct)}</b> of all
+      restaurants — yet they sit mid-table on rating
+      ${ni?`(North Indian averages <b>${f2(ni.rating)}</b>)`:""}. The highest-rated cuisines are the
+      under-supplied ones ${it?`(Italian <b>${f2(it.rating)}</b> at <b>${inr(it.cost)}</b>)`:""}.
+      Crowded categories are where averages go to die.</p></div>
+    <div class="insight good"><h4>The differentiation play</h4><p>
+      Cuisines with high average rating <i>and</i> low restaurant count are the whitespace: you inherit less
+      price competition and a customer base with fewer alternatives. That is the single clearest “what to open” signal
+      on this page — cross it with the locality shortlist on page 4.</p></div>
+    <div class="insight warn"><h4>Multi-cuisine menus are the norm, not an edge</h4><p>
+      Only <b>${pct(STATS.single_cuisine_restaurants_pct)}</b> of restaurants serve a single cuisine; the average venue lists
+      <b>${f2(mean(rows.map(r=>r[CUS].length)))}</b>. Adding another cuisine to the board does not differentiate you —
+      it just moves you into more crowded comparison sets.</p></div>`;
+}
+
+function renderOpportunity(rows){
+  const locs=groupBy(rows,r=>r[LOC]).map(g=>{
+    const rr=g.rows.filter(r=>r[RATE]!=null);
+    const votes=g.rows.reduce((s,r)=>s+r[VOTES],0);
+    return {loc:DATA.localities[g.key],city:DATA.cities[g.rows[0][CITY]],n:g.rows.length,
+      rating:mean(rr.map(r=>r[RATE])),cost:mean(g.rows.map(r=>r[COST]).filter(v=>v!=null)),
+      vpr:votes/g.rows.length};
+  }).filter(d=>d.n>=MIN_LOC_N&&d.rating!=null);
+
+  if(locs.length<3){
+    $("#chQuad").innerHTML=`<p class="hint">Not enough localities with ${MIN_LOC_N}+ restaurants inside the current filter to score. Widen the filter.</p>`;
+    $("#tblOpp").innerHTML="";$("#insOpp").innerHTML="";return;
+  }
+  const dz=locs.map(d=>Math.log1p(d.vpr)), qz=locs.map(d=>d.rating);
+  const dm=mean(dz),ds=sd(dz)||1, qm=mean(qz),qs=sd(qz)||1;
+  locs.forEach(d=>d.score=(Math.log1p(d.vpr)-dm)/ds-(d.rating-qm)/qs);
+  locs.sort((a,b)=>b.score-a.score);
+
+  const top=locs.slice(0,12);
+  const rankOf=new Map(top.slice(0,5).map((d,i)=>[d.loc,i+1]));
+  drawScatter($("#chQuad"),locs.map(d=>({
+      x:d.rating,y:Math.log10(Math.max(d.vpr,1)),
+      r:Math.min(13,4+Math.sqrt(d.n)),
+      rank:rankOf.get(d.loc),
+      color:d.score>0.9?"var(--s2)":"var(--ord2)",
+      tip:tipRows(d.loc+", "+d.city,[["Restaurants",fmt(d.n)],["Avg rating",f2(d.rating)],
+        ["Votes / restaurant",fmt(Math.round(d.vpr))],["Avg cost for two",inr(d.cost)],["Opportunity score",f2(d.score)]])})),
+    {height:330,xTitle:"Incumbent average rating →",yTitle:"log₁₀ votes per restaurant →",
+     xFmt:v=>v.toFixed(1),yFmt:v=>Math.round(10**v).toLocaleString("en-IN"),
+     refX:qm,refY:mean(locs.map(d=>Math.log10(Math.max(d.vpr,1)))),
+     aria:"Locality opportunity quadrant"});
+  $("#chQuad").insertAdjacentHTML("beforeend",
+    `<p class="legend"><span><i style="background:var(--s2)"></i>Shortlisted (score &gt; 0.9)</span>
+      <span><i style="background:var(--ord2)"></i>Other localities</span>
+      <span style="color:var(--ink-muted)">numbered markers = top 5 in the ranked list · dashed lines = market average · marker area ∝ restaurant count</span></p>`);
+
+  const maxS=top.length?top[0].score:1;
+  drawTable($("#tblOpp"),[
+    {h:"#",get:(d,i)=>`<span class="rank">${i+1}</span>`},
+    {h:"Locality",get:d=>`${esc(d.loc)}<br><span style="color:var(--ink-muted);font-size:11px">${esc(d.city)}</span>`,
+     title:d=>d.loc+", "+d.city},
+    {h:"n",num:true,get:d=>fmt(d.n)},
+    {h:"★",num:true,get:d=>f2(d.rating)},
+    {h:"Votes/rest",num:true,get:d=>fmt(Math.round(d.vpr))},
+    {h:"Score",num:true,get:d=>f2(d.score),bar:d=>100*d.score/maxS},
+  ],top,{click:{key:d=>d.loc,fn:l=>{$("#fSearch").value=l;state.search=l;render();}}});
+
+  const t1=top[0],t2=top[1];
+  const weak=locs.filter(d=>d.rating<qm&&Math.log1p(d.vpr)>dm);
+  $("#insOpp").innerHTML=`
+    <div class="insight good"><h4>1 · Open in a proven catchment with a weak incumbent set</h4><p>
+      <b>${esc(t1.loc)}, ${esc(t1.city)}</b> tops the shortlist: ${fmt(t1.n)} restaurants already there earning
+      <b>${fmt(Math.round(t1.vpr))}</b> votes each — the footfall is proven — but their average rating is only
+      <b>${f2(t1.rating)}</b> against a market average of <b>${f2(qm)}</b>. ${t2?`<b>${esc(t2.loc)}</b> is the same story.`:""}
+      Beating a 2.8–3.0 incumbent average is an execution problem, not a marketing one.</p></div>
+    <div class="insight"><h4>2 · Price to the locality, not to the city</h4><p>
+      The shortlisted localities average <b>${inr(mean(top.map(d=>d.cost)))}</b> for two.
+      Anchor the menu there; pricing to the city-wide mean would place you above the local willingness-to-pay
+      in exactly the catchments where the opportunity is.</p></div>
+    <div class="insight warn"><h4>3 · ${fmt(weak.length)} localities are “busy but mediocre”</h4><p>
+      These sit above average on demand and below average on rating. For an existing operator with a site there,
+      the highest-return action is not a new outlet — it is fixing the rating, because the demand already exists and
+      the competitive bar is low.</p></div>
+    <div class="insight crit"><h4>Honest limitation</h4><p>
+      <b>${pct(STATS.pct_restaurants_in_delhi_ncr)}</b> of the restaurants in this dataset are in Delhi NCR, so this
+      shortlist is an NCR shortlist. Votes are a proxy for footfall, not footfall itself, and the extract is a
+      point-in-time snapshot with no dates — so nothing here is a trend, only a cross-section.</p></div>`;
+}
+
+function renderMethod(){
+  $("#methodBody").innerHTML=`
+  <h3>Scope decisions (ask me about these — they are the real work)</h3>
+  <ul>
+    <li><b>Rating 0 means “not rated”, not “zero stars”.</b> ${fmt(REFERENCE.not_rated_count)} venues
+        (${pct(REFERENCE.not_rated_pct)}) have never been rated. Keeping them in the average would report
+        <code>${f2(REFERENCE.avg_rating_if_zeros_kept)}</code> instead of <code>${f2(REFERENCE.avg_rating)}</code>.
+        Every rating measure here divides by rated venues only.</li>
+    <li><b>Money is India-only.</b> The raw extract mixes 15 currencies; averaging ₹ with $ is meaningless.
+        Cost KPIs are scoped to <code>Country = India</code> (${fmt(META.rows_india)} of ${fmt(META.rows_raw)} rows).
+        Currency-free metrics (price tier 1–4, rating, service flags) can safely go global.</li>
+    <li><b>Leaderboards need a credibility floor.</b> A 4.9 from 3 votes is noise. “Top rated” requires
+        ≥ ${MIN_VOTES} votes; city benchmarks require ≥ ${MIN_CITY_N} restaurants; cuisine rankings ≥ ${MIN_CUISINE_N};
+        locality scoring ≥ ${MIN_LOC_N}.</li>
+    <li><b>Cuisines are a many-to-many.</b> One venue lists up to 8 cuisines, so they live in a bridge table.
+        Cuisine bars therefore sum to more than the restaurant count — that is correct, not a bug.</li>
+  </ul>
+
+  <h3>KPI definitions</h3>
+  <ul>
+    <li><b>Restaurants</b> — distinct count of <code>Restaurant ID</code>, not row count, so a re-listing can’t inflate it.</li>
+    <li><b>Avg / median / P90 cost for two</b> — cost is right-skewed (skew ≈ ${f2(REFERENCE.cost_skew)}), so the median is the
+        honest benchmark and P90 shows the luxury tail. The CV bullet “benchmarked the average dining cost for two” is this trio.</li>
+    <li><b>Avg rating</b> — mean of <code>Aggregate rating</code> over rated venues only.</li>
+    <li><b>Not-rated %</b> — a coverage metric and a commercial one: these are cold-start venues.</li>
+    <li><b>Online delivery % / Table booking %</b> — share of venues with the flag set, inside the current filter.</li>
+    <li><b>Value score</b> — <code>rating ÷ (cost for two ÷ 100)</code>: stars delivered per ₹100. Only meaningful with a
+        rating floor of 4.0, otherwise cheap-and-bad wins.</li>
+    <li><b>Opportunity score</b> — <code>z(log(votes per restaurant)) − z(avg rating)</code> per locality.
+        The log matters: raw votes-per-restaurant is so skewed that one locality would dominate the score and the
+        quality term would become decorative.</li>
+  </ul>
+
+  <h3>The same measures in DAX (Power BI parity)</h3>
+  <div class="dax">Total Restaurants = DISTINCTCOUNT ( fact_restaurants[Restaurant ID] )
+
+Avg Rating =
+AVERAGEX (
+    FILTER ( fact_restaurants, fact_restaurants[Is Rated] = TRUE() ),
+    fact_restaurants[Aggregate rating]
+)
+
+Avg Cost for Two (INR) =
+CALCULATE (
+    AVERAGE ( fact_restaurants[Average Cost for two] ),
+    fact_restaurants[Country] = "India"
+)
+
+Online Delivery % =
+DIVIDE (
+    CALCULATE ( [Total Restaurants], fact_restaurants[Has Online delivery] = TRUE() ),
+    [Total Restaurants]
+)
+
+Opportunity Score =
+VAR Demand  = DIVIDE ( SUM ( fact_restaurants[Votes] ), [Total Restaurants] )
+VAR LogD    = LN ( 1 + Demand )
+VAR AllLoc  = ALLSELECTED ( fact_restaurants[Locality] )
+VAR MeanD   = AVERAGEX ( AllLoc, LN ( 1 + DIVIDE ( SUM ( fact_restaurants[Votes] ), [Total Restaurants] ) ) )
+VAR SdD     = STDEVX.P ( AllLoc, LN ( 1 + DIVIDE ( SUM ( fact_restaurants[Votes] ), [Total Restaurants] ) ) )
+VAR MeanR   = AVERAGEX ( AllLoc, [Avg Rating] )
+VAR SdR     = STDEVX.P ( AllLoc, [Avg Rating] )
+RETURN DIVIDE ( LogD - MeanD, SdD ) - DIVIDE ( [Avg Rating] - MeanR, SdR )</div>
+  <p style="margin-top:10px">The full model — Power Query steps, relationships, every measure, page-by-page visual
+     placement — is in <code>docs/POWERBI_GUIDE.md</code> in the repository.</p>
+
+  <h3>Known limitations</h3>
+  <ul>
+    <li>Delhi NCR is <b>${pct(STATS.pct_restaurants_in_delhi_ncr)}</b> of the India rows, so national conclusions are really NCR conclusions.</li>
+    <li>No timestamps anywhere in the extract — every number is a cross-section, never a trend.</li>
+    <li><code>Votes</code> is the only demand proxy available. It measures <i>reviewing</i> behaviour, which correlates
+        with footfall but is biased toward younger, app-native diners.</li>
+    <li>No revenue, cover count, or cost-of-goods data, so “higher revenue” recommendations are directional, not modelled.</li>
+  </ul>`;
+
+  /* self-check: JS measures vs the pandas reference, unfiltered */
+  const m=measures(DATA.rows);
+  const checks=[
+    ["Total restaurants",m.n,REFERENCE.total_restaurants,0],
+    ["Cities covered",m.cities,REFERENCE.cities_covered,0],
+    ["Localities covered",m.localities,REFERENCE.localities_covered,0],
+    ["Avg cost for two (₹)",Math.round(m.avgCost),REFERENCE.avg_cost_for_two,1],
+    ["Median cost for two (₹)",Math.round(m.medCost),REFERENCE.median_cost_for_two,1],
+    ["Avg rating",+m.avgRating.toFixed(2),REFERENCE.avg_rating,0.011],
+    ["Not-rated %",+m.notRatedPct.toFixed(1),REFERENCE.not_rated_pct,0.11],
+    ["Online delivery %",+m.deliveryPct.toFixed(1),REFERENCE.online_delivery_pct,0.11],
+    ["Table booking %",+m.bookingPct.toFixed(1),REFERENCE.table_booking_pct,0.11],
+    ["Total votes",m.votes,REFERENCE.total_votes,0],
+    ["Distinct cuisines",m.cuisines,REFERENCE.distinct_cuisines,0],
+  ];
+  const bad=checks.filter(([,a,b,tol])=>Math.abs(a-b)>tol).length;
+  $("#selfCheck").innerHTML=`<table><tr><th>KPI</th><th class="num">Browser (JS)</th><th class="num">Pipeline (pandas)</th><th>Match</th></tr>`+
+    checks.map(([k,a,b,tol])=>{const ok=Math.abs(a-b)<=tol;
+      return `<tr><td>${k}</td><td class="num">${fmt(a)}</td><td class="num">${fmt(b)}</td>
+        <td class="${ok?"ok":"bad"}">${ok?"✓ match":"✗ differs"}</td></tr>`;}).join("")+
+    `</table><p class="hint" style="margin-top:8px">${bad===0
+      ? `<span class="ok">All ${checks.length} KPIs agree between the browser and the pandas pipeline.</span>`
+      : `<span class="bad">${bad} KPI(s) disagree — the pipeline and the dashboard are out of sync.</span>`}</p>`;
+}
+
+/* ===================================================================
+   6. TABLE-VIEW TOGGLES  (accessibility relief: every chart has a table)
+   =================================================================== */
+function wireTableToggles(){
+  $$(".tbtn").forEach(b=>{
+    if(b.dataset.wired)return; b.dataset.wired=1;
+    b.addEventListener("click",()=>{
+      const host=$("#"+b.dataset.table);
+      let t=host.nextElementSibling;
+      if(t&&t.classList.contains("chart-table")){t.remove();b.textContent="Table";return;}
+      b.textContent="Chart";
+      const rows=[...host.querySelectorAll("[data-tip]")].map(el=>el.dataset.tip);
+      const parsed=rows.map(html=>{const d=document.createElement("div");d.innerHTML=html;
+        const name=d.querySelector("b")?.textContent||"";
+        const kv=[...d.querySelectorAll(".r")].map(r=>[...r.querySelectorAll("span")].map(s=>s.textContent));
+        return {name,kv};}).filter(p=>p.name);
+      if(!parsed.length)return;
+      const keys=[...new Set(parsed.flatMap(p=>p.kv.map(([k])=>k)))].filter(k=>k);
+      const tbl=document.createElement("div");tbl.className="chart-table tblwrap";
+      tbl.innerHTML=`<table><tr><th>Item</th>${keys.map(k=>`<th class="num">${esc(k)}</th>`).join("")}</tr>`+
+        parsed.map(p=>`<tr><td>${esc(p.name)}</td>`+keys.map(k=>{
+          const hit=p.kv.find(([kk])=>kk===k); return `<td class="num">${hit?esc(hit[1]):"—"}</td>`;}).join("")+"</tr>").join("")+"</table>";
+      host.after(tbl);
+    });
+  });
+}
+
+/* ===================================================================
+   7. RENDER ORCHESTRATION
+   =================================================================== */
+let currentPage="overview";
+function render(){
+  const rows=activeRows();
+  $$(".chart-table").forEach(e=>e.remove());
+  $$(".tbtn").forEach(b=>b.textContent="Table");
+
+  /* active filter description */
+  const bits=[];
+  if(state.city)bits.push(`City: <b>${esc(state.city)}</b>`);
+  if(state.cuisine)bits.push(`Cuisine: <b>${esc(state.cuisine)}</b>`);
+  if(state.prices.size)bits.push(`Price tier: <b>${[...state.prices].sort().join(", ")}</b>`);
+  if(state.delivery)bits.push("Online delivery");
+  if(state.booking)bits.push("Table booking");
+  if(state.ratedOnly)bits.push("Rated only");
+  if(state.credible)bits.push("50+ votes");
+  if(state.minRating>0)bits.push(`Rating ≥ <b>${state.minRating.toFixed(1)}</b>`);
+  if(state.search.trim())bits.push(`Search: <b>${esc(state.search.trim())}</b>`);
+  $("#activeNote").innerHTML=
+    `<span><b>${fmt(rows.length)}</b> of ${fmt(DATA.rows.length)} restaurants in scope</span>`+
+    (bits.length?bits.map(b=>`<span class="pill">${b}</span>`).join(""):`<span class="pill">no filters applied</span>`);
+
+  if(!rows.length){
+    ["#kpiStrip","#kpiStrip2"].forEach(s=>$(s).innerHTML=
+      `<div class="tile"><span class="k">No rows</span><span class="v">0</span><span class="d">Widen the filter</span></div>`);
+    return;
+  }
+  if(currentPage==="overview")    renderOverview(rows);
+  if(currentPage==="cost")        renderCost(rows);
+  if(currentPage==="cuisine")     renderCuisine(rows);
+  if(currentPage==="opportunity") renderOpportunity(rows);
+  if(currentPage==="method")      renderMethod();
+  wireTableToggles();
+}
+
+/* ===================================================================
+   8. WIRING
+   =================================================================== */
+function init(){
+  /* header facts */
+  $("#hdr-count").textContent=fmt(DATA.rows.length);
+  $("#hdr-cities").textContent=fmt(new Set(DATA.rows.map(r=>r[CITY])).size);
+  $("#ftRows").textContent=`${fmt(DATA.rows.length)} rows inlined · ${fmt(DATA.cuisines.length)} cuisines · generated by ${META.generated_by}`;
+
+  /* slicer options, ordered by size so the useful ones are at the top */
+  const cityCount=new Map();
+  DATA.rows.forEach(r=>cityCount.set(r[CITY],(cityCount.get(r[CITY])||0)+1));
+  [...cityCount.entries()].sort((a,b)=>b[1]-a[1]).forEach(([id,n])=>{
+    const o=document.createElement("option");o.value=DATA.cities[id];
+    o.textContent=`${DATA.cities[id]} (${n.toLocaleString("en-IN")})`;$("#fCity").append(o);});
+  const cusCount=new Map();
+  DATA.rows.forEach(r=>r[CUS].forEach(c=>cusCount.set(c,(cusCount.get(c)||0)+1)));
+  [...cusCount.entries()].sort((a,b)=>b[1]-a[1]).forEach(([id,n])=>{
+    const o=document.createElement("option");o.value=DATA.cuisines[id];
+    o.textContent=`${DATA.cuisines[id]} (${n.toLocaleString("en-IN")})`;$("#fCuisine").append(o);});
+
+  $("#fCity").addEventListener("change",e=>{state.city=e.target.value;render();});
+  $("#fCuisine").addEventListener("change",e=>{state.cuisine=e.target.value;render();});
+  $("#fPrice").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;
+    const p=+b.dataset.p, on=b.getAttribute("aria-pressed")==="true";
+    b.setAttribute("aria-pressed",String(!on)); on?state.prices.delete(p):state.prices.add(p); render();});
+  $("#fSvc").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;
+    const k=b.dataset.s, on=b.getAttribute("aria-pressed")==="true";
+    b.setAttribute("aria-pressed",String(!on));
+    state[k==="rated"?"ratedOnly":k]=!on; render();});
+  $("#fRating").addEventListener("input",e=>{state.minRating=+e.target.value;
+    $("#fRatingV").textContent=state.minRating.toFixed(1);render();});
+  let sT;$("#fSearch").addEventListener("input",e=>{clearTimeout(sT);
+    sT=setTimeout(()=>{state.search=e.target.value;render();},180);});
+
+  $("#resetBtn").addEventListener("click",()=>{
+    Object.assign(state,{city:"",cuisine:"",prices:new Set(),delivery:false,booking:false,
+      ratedOnly:false,credible:false,minRating:0,search:""});
+    $("#fCity").value="";$("#fCuisine").value="";$("#fSearch").value="";
+    $("#fRating").value=0;$("#fRatingV").textContent="0.0";
+    $$("#fPrice .chip,#fSvc .chip").forEach(c=>c.setAttribute("aria-pressed","false"));
+    render();});
+
+  $("#themeBtn").addEventListener("click",()=>{
+    const dark=document.documentElement.dataset.theme==="dark";
+    document.documentElement.dataset.theme=dark?"light":"dark";
+    $("#themeBtn").textContent=dark?"Dark mode":"Light mode";
+    $("#themeBtn").setAttribute("aria-pressed",String(!dark));
+    render();});
+  if(matchMedia("(prefers-color-scheme: dark)").matches){$("#themeBtn").click();}
+
+  $$("nav.tabs button").forEach(b=>b.addEventListener("click",()=>{
+    $$("nav.tabs button").forEach(x=>x.setAttribute("aria-selected","false"));
+    b.setAttribute("aria-selected","true");
+    currentPage=b.dataset.page;
+    ["overview","cost","cuisine","opportunity","method"].forEach(p=>
+      $("#page-"+p).classList.toggle("hidden",p!==currentPage));
+    $("#filters").classList.toggle("hidden",currentPage==="method");
+    $("#activeNote").classList.toggle("hidden",currentPage==="method");
+    render();}));
+
+  render();
+  addEventListener("resize",()=>{clearTimeout(window.__rz);window.__rz=setTimeout(render,200);});
+}
+init();
+</script>
+</body>
+</html>

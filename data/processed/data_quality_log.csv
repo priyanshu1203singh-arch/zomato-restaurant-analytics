@@ -1,0 +1,10 @@
+step,rows_affected,detail
+load,9551,"zomato.csv -> 9,551 rows x 21 cols"
+dedupe,0,dropped duplicate Restaurant IDs
+drop_constant,9551,'Switch to order menu' is constant -> dropped
+rating_zero_to_null,2148,Aggregate rating 0 -> NULL; excluded from every average (bias fix)
+cost_zero_to_null,18,Average Cost for two <= 0 -> NULL
+cuisine_missing,9,blank Cuisines -> 'Unspecified'
+cuisine_explode,19714,restaurant-cuisine pairs in bridge table
+derived,9551,"Cost Band, Value Score, Credible Rating (>=50 votes)"
+geo_flag,497,rows flagged Geo Valid = False
