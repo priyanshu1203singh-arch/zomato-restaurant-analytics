@@ -21,3 +21,6 @@ Thumbs.db
 # (2.2 MB raw + ~2 MB processed is well inside a comfortable repo size.)
 !data/raw/zomato.csv
 !data/processed/*.csv
+
+# Streamlit local state
+.streamlit/secrets.toml

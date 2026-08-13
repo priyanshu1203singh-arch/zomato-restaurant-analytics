@@ -1,0 +1,192 @@
+[
+  {
+    "check": "total restaurants",
+    "pass": true,
+    "detail": "app=8652 pipeline=8652 tol=0.0"
+  },
+  {
+    "check": "cities covered",
+    "pass": true,
+    "detail": "app=43 pipeline=43 tol=0.0"
+  },
+  {
+    "check": "localities covered",
+    "pass": true,
+    "detail": "app=784 pipeline=784 tol=0.0"
+  },
+  {
+    "check": "avg cost for two",
+    "pass": true,
+    "detail": "app=624 pipeline=624.0 tol=1"
+  },
+  {
+    "check": "median cost for two",
+    "pass": true,
+    "detail": "app=450.0 pipeline=450.0 tol=1"
+  },
+  {
+    "check": "p90 cost for two",
+    "pass": true,
+    "detail": "app=1300.0 pipeline=1300.0 tol=1"
+  },
+  {
+    "check": "avg rating",
+    "pass": true,
+    "detail": "app=3.35 pipeline=3.35 tol=0.011"
+  },
+  {
+    "check": "rated venue count",
+    "pass": true,
+    "detail": "app=6513 pipeline=6513 tol=0.0"
+  },
+  {
+    "check": "not-rated %",
+    "pass": true,
+    "detail": "app=24.7 pipeline=24.7 tol=0.11"
+  },
+  {
+    "check": "online delivery %",
+    "pass": true,
+    "detail": "app=28.0 pipeline=28.0 tol=0.11"
+  },
+  {
+    "check": "table booking %",
+    "pass": true,
+    "detail": "app=12.8 pipeline=12.8 tol=0.11"
+  },
+  {
+    "check": "total votes",
+    "pass": true,
+    "detail": "app=1187163 pipeline=1187163 tol=0.0"
+  },
+  {
+    "check": "distinct cuisines",
+    "pass": true,
+    "detail": "app=90 pipeline=90 tol=0.0"
+  },
+  {
+    "check": "avg cuisines per restaurant",
+    "pass": true,
+    "detail": "app=2.06 pipeline=2.06 tol=0.011"
+  },
+  {
+    "check": "top rated restaurant",
+    "pass": true,
+    "detail": "app='Barbeque Nation' pipeline='Barbeque Nation' tol=0.0"
+  },
+  {
+    "check": "most expensive restaurant",
+    "pass": true,
+    "detail": "app='Orient Express - Taj Palace Hotel' pipeline='Orient Express - Taj Palace Hotel' tol=0.0"
+  },
+  {
+    "check": "pearson cost~rating",
+    "pass": true,
+    "detail": "app=0.205 pipeline=0.205 tol=0.0011"
+  },
+  {
+    "check": "spearman cost~rating",
+    "pass": true,
+    "detail": "app=0.228 pipeline=0.228 tol=0.0011"
+  },
+  {
+    "check": "pearson log(votes)~rating",
+    "pass": true,
+    "detail": "app=0.463 pipeline=0.463 tol=0.0011"
+  },
+  {
+    "check": "correlation sample size",
+    "pass": true,
+    "detail": "app=3243 pipeline=3243 tol=0.0"
+  },
+  {
+    "check": "opportunity #1 locality",
+    "pass": true,
+    "detail": "app='V3S Mall, Laxmi Nagar' pipeline='V3S Mall, Laxmi Nagar' tol=0.0"
+  },
+  {
+    "check": "opportunity #1 city",
+    "pass": true,
+    "detail": "app='New Delhi' pipeline='New Delhi' tol=0.0"
+  },
+  {
+    "check": "opportunity #1 score",
+    "pass": true,
+    "detail": "app=np.float64(2.13) pipeline=2.14 tol=0.011"
+  },
+  {
+    "check": "opportunity #2 locality",
+    "pass": true,
+    "detail": "app='Supertech Shopprix Mall, Sector 61' pipeline='Supertech Shopprix Mall, Sector 61' tol=0.0"
+  },
+  {
+    "check": "opportunity model respects the 15-restaurant floor",
+    "pass": true,
+    "detail": "min n = 15"
+  },
+  {
+    "check": "price tiers sum to the restaurant count",
+    "pass": true,
+    "detail": "8,652 vs 8,652"
+  },
+  {
+    "check": "price tiers are in ascending order",
+    "pass": true,
+    "detail": "['1 - Budget', '2 - Mid-range', '3 - Premium', '4 - Luxury']"
+  },
+  {
+    "check": "rating histogram sums to the rated count",
+    "pass": true,
+    "detail": "6,513 vs 6,513"
+  },
+  {
+    "check": "cuisine counts exceed the restaurant count (many-to-many is real)",
+    "pass": true,
+    "detail": "17,849 appearances vs 8,652 restaurants"
+  },
+  {
+    "check": "value leaderboard respects the 4.0 rating floor",
+    "pass": true,
+    "detail": "min rating 4.0"
+  },
+  {
+    "check": "city filter narrows the frame",
+    "pass": true,
+    "detail": "20 rows"
+  },
+  {
+    "check": "city filter returns only that city",
+    "pass": true,
+    "detail": "{'Bangalore'}"
+  },
+  {
+    "check": "luxury tier count",
+    "pass": true,
+    "detail": "app=388 pipeline=388 tol=0.0"
+  },
+  {
+    "check": "Italian cuisine count",
+    "pass": true,
+    "detail": "app=682 pipeline=682 tol=0.0"
+  },
+  {
+    "check": "online delivery count",
+    "pass": true,
+    "detail": "app=2423 pipeline=2423 tol=1"
+  },
+  {
+    "check": "an impossible filter returns empty rather than throwing",
+    "pass": true,
+    "detail": "0 rows"
+  },
+  {
+    "check": "free-text search matches localities",
+    "pass": true,
+    "detail": "100 rows"
+  },
+  {
+    "check": "KPIs compute on a filtered frame",
+    "pass": true,
+    "detail": "20 restaurants, avg rating 4.38"
+  }
+]

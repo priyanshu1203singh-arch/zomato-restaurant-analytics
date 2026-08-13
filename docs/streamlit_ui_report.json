@@ -1,0 +1,92 @@
+[
+  {
+    "name": "app loads with no page errors",
+    "pass": true,
+    "detail": ""
+  },
+  {
+    "name": "title renders",
+    "pass": true,
+    "detail": "Zomato Restaurant Analytics & Insights"
+  },
+  {
+    "name": "scope line shows the unfiltered row count",
+    "pass": true,
+    "detail": "8,652 of 8,652 restaurants in scope"
+  },
+  {
+    "name": "8 KPI tiles render on page 1",
+    "pass": true,
+    "detail": "8 visible tiles"
+  },
+  {
+    "name": "Restaurants tile = 8,652",
+    "pass": true,
+    "detail": "8,652"
+  },
+  {
+    "name": "Avg cost tile = ₹624",
+    "pass": true,
+    "detail": "₹624"
+  },
+  {
+    "name": "Avg rating tile = 3.35",
+    "pass": true,
+    "detail": "3.35"
+  },
+  {
+    "name": "Not rated tile = 24.7%",
+    "pass": true,
+    "detail": "24.7%"
+  },
+  {
+    "name": "five tabs present",
+    "pass": true,
+    "detail": "5 tabs"
+  },
+  {
+    "name": "tab \"overview\" renders content",
+    "pass": true,
+    "detail": "4 charts, 0 tables, 2396 chars"
+  },
+  {
+    "name": "tab \"cost\" renders content",
+    "pass": true,
+    "detail": "2 charts, 2 tables, 1779 chars"
+  },
+  {
+    "name": "tab \"cuisine\" renders content",
+    "pass": true,
+    "detail": "2 charts, 1 tables, 2153 chars"
+  },
+  {
+    "name": "tab \"opportunity\" renders content",
+    "pass": true,
+    "detail": "1 charts, 1 tables, 1961 chars"
+  },
+  {
+    "name": "tab \"method\" renders content",
+    "pass": true,
+    "detail": "0 charts, 1 tables, 2845 chars"
+  },
+  {
+    "name": "city filter changes the scope line",
+    "pass": true,
+    "detail": "20 of 8,652 restaurants in scope"
+  },
+  {
+    "name": "active-filter chip names the city",
+    "pass": true,
+    "detail": "City: Bangalore"
+  },
+  {
+    "name": "KPI tile recomputes under the filter",
+    "pass": true,
+    "detail": "Restaurants = 20, avg rating 4.38"
+  },
+  {
+    "name": "screenshots optimised",
+    "pass": true,
+    "detail": "2834 KB -> 832 KB"
+  }
+]

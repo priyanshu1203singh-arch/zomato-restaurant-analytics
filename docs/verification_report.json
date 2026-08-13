@@ -98,7 +98,7 @@
     {
       "name": "screenshots optimised for the repo",
       "pass": true,
-      "detail": "4633 KB -> 1438 KB"
+      "detail": "5465 KB -> 1790 KB"
     }
   ],
   "screenshots": [
@@ -107,6 +107,12 @@
     "page-method.png",
     "page-opportunity.png",
     "page-overview-dark.png",
-    "page-overview.png"
+    "page-overview.png",
+    "streamlit-cost.png",
+    "streamlit-cuisine.png",
+    "streamlit-filtered.png",
+    "streamlit-method.png",
+    "streamlit-opportunity.png",
+    "streamlit-overview.png"
   ]
 }

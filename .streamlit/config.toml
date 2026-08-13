@@ -1,0 +1,16 @@
+# Streamlit theme. Same tokens as the HTML dashboard so the two versions of this
+# project look like one system.
+[theme]
+base = "light"
+primaryColor = "#2a78d6"
+backgroundColor = "#f9f9f7"
+secondaryBackgroundColor = "#fcfcfb"
+textColor = "#0b0b0b"
+font = "sans serif"
+
+[server]
+headless = true
+enableCORS = false
+
+[browser]
+gatherUsageStats = false

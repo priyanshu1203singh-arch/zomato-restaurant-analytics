@@ -27,8 +27,18 @@ their rating.**
 | **Engagement** | **1,187,163** total votes · 137 per restaurant |
 | **Deliverables** | 5-page interactive dashboard · Power BI model + full DAX · reproducible pipeline · 19 automated checks |
 
-**Open the dashboard:** download [`dashboard/zomato_dashboard.html`](dashboard/zomato_dashboard.html)
-and double-click it. No server, no install, no internet — the data is baked into the file.
+**Three ways to see it:**
+
+| | |
+|---|---|
+| **Live app** | Deploy `streamlit_app.py` to [Streamlit Community Cloud](https://share.streamlit.io) — free, ~3 minutes, gives you a public URL. See [`docs/STREAMLIT_DEPLOY.md`](docs/STREAMLIT_DEPLOY.md). |
+| **Download and open** | [`dashboard/zomato_dashboard.html`](dashboard/zomato_dashboard.html) — one file, no server, no install, no internet. The data is baked in. |
+| **Build it in Power BI** | [`docs/POWERBI_GUIDE.md`](docs/POWERBI_GUIDE.md) — data model, Power Query steps, every DAX measure, page-by-page layout. |
+
+```bash
+pip install -r requirements.txt
+streamlit run streamlit_app.py     # http://localhost:8501
+```
 
 ---
 
@@ -40,6 +50,13 @@ and double-click it. No server, no install, no internet — the data is baked in
 | **Page 1 — Executive overview.** KPI strip, rating distribution, price-tier mix, city ranking, service adoption. | **Page 2 — Cost & value.** Does spending more buy a better meal? Cost-vs-rating scatter, most expensive and best-value leaderboards. |
 | ![Cuisine and city](assets/page-cuisine.png) | ![Where to open next](assets/page-opportunity.png) |
 | **Page 3 — Cuisine & city.** Supply vs quality by cuisine, and the "is my pricing normal here?" city benchmark table. | **Page 4 — Where to open next.** A scored locality shortlist from a demand-vs-quality opportunity model. |
+
+### The same five pages as a Streamlit app
+
+| | |
+|---|---|
+| ![Streamlit overview](assets/streamlit-overview.png) | ![Streamlit opportunity](assets/streamlit-opportunity.png) |
+| Sidebar slicers, `st.metric` KPI strip, Plotly charts. | The opportunity quadrant on a log axis, with the ranked shortlist beside it. |
 
 Every page shares one filter bar — city, cuisine, price tier, services, minimum
 rating, free-text search — and every KPI, chart and table recalculates from the
@@ -241,6 +258,13 @@ zomato-restaurant-analytics/
 │   ├── 03_build_dashboard.py        bake data into a single-file dashboard
 │   ├── 04_verify_dashboard.mjs      19 headless checks + screenshots
 │   └── 05_write_docs.py             regenerate README + docs from kpis.json
+├── streamlit_app.py                 the Streamlit app (deploy this)
+├── .streamlit/config.toml           Streamlit theme, same tokens as the dashboard
+├── app/
+│   └── measures.py                  shared measure layer used by the app + tests
+├── tests/
+│   ├── test_streamlit_measures.py   38 checks: app measures vs the pipeline
+│   └── test_streamlit_app.mjs       18 checks: the app in headless Chromium
 ├── dashboard/
 │   ├── _template.html               dashboard source (charts, measures, layout)
 │   ├── kpis.json                    every number, written by stage 2
@@ -249,6 +273,7 @@ zomato-restaurant-analytics/
 │   └── README.md                    where the .pbix lives + how to rebuild it
 ├── docs/
 │   ├── POWERBI_GUIDE.md             full Power BI rebuild: model, DAX, layout
+│   ├── STREAMLIT_DEPLOY.md          deploy to Streamlit Community Cloud
 │   ├── INTERVIEW_PREP.md            every KPI explained + 25 likely questions
 │   └── verification_report.json     output of stage 4
 └── assets/                          dashboard screenshots (generated)
@@ -267,11 +292,15 @@ python scripts/02_build_kpis.py       # -> dashboard/kpis.json
 python scripts/03_build_dashboard.py  # -> dashboard/zomato_dashboard.html
 python scripts/05_write_docs.py       # -> README.md, docs/*.md
 
-npm i playwright                      # optional: run the verification suite
-node scripts/04_verify_dashboard.mjs  # 19 checks + screenshots to assets/
+streamlit run streamlit_app.py        # the live app on localhost:8501
+
+npm i playwright                      # optional: run the verification suites
+node scripts/04_verify_dashboard.mjs  # 20 checks on the HTML dashboard
+python tests/test_streamlit_measures.py   # 38 checks on the app's measures
+node tests/test_streamlit_app.mjs         # 18 checks on the running app
 ```
 
-Or just `make all`.
+Or just `make all`, then `make verify`.
 
 ## Verification
 
@@ -289,15 +318,36 @@ built dashboard in headless Chromium and asserts:
   all behave
 - screenshots are captured for this README
 
-Current status: **19/19 passing** (`docs/verification_report.json`).
+The Streamlit app gets the same treatment. `tests/test_streamlit_measures.py`
+asserts that `app/measures.py` reproduces all 13 reference KPIs, both correlation
+statistics, the opportunity model's top-2 localities and every threshold, and that
+the filter layer narrows correctly and returns empty rather than throwing on an
+impossible selection. `tests/test_streamlit_app.mjs` then drives the running app in
+headless Chromium: KPI tiles, all five tabs rendering charts, and the city slicer
+actually recomputing the metrics.
+
+| Suite | What it checks | Status |
+|---|---|--:|
+| `scripts/04_verify_dashboard.mjs` | HTML dashboard in a browser, incl. pandas ↔ JS reconciliation | **20/20** |
+| `scripts/06_verify_docs.py` | no figure in any document has drifted from the data | **69/69** |
+| `tests/test_streamlit_measures.py` | app measures vs the pipeline | **38/38** |
+| `tests/test_streamlit_app.mjs` | the running Streamlit app in a browser | **18/18** |
+
+**145 checks, all passing.**
+
+Why three front-ends is a feature and not indecision: the measures now exist in
+three independent implementations — pandas, vanilla JavaScript and the Streamlit
+measure layer — and the suites assert they agree. Two implementations agreeing is
+real evidence the measure logic is right. One implementation rendering without
+errors is not.
 
 ## Tech
 
 **Python** (pandas, numpy) for the pipeline · **Power BI Desktop** (Power Query +
 DAX) for the modelled report, documented in `docs/POWERBI_GUIDE.md` ·
-**vanilla JavaScript + SVG** for the interactive dashboard — no chart library and
-no CDN, so the single HTML file works offline forever · **Playwright** for
-verification.
+**vanilla JavaScript + SVG** for the single-file dashboard — no chart library and
+no CDN, so it works offline forever · **Streamlit + Plotly** for the deployable
+web app · **Playwright** for browser verification.
 
 The dashboard palette is validated for colour-vision deficiency: categorical
 hues are assigned in a fixed order that clears a ΔE ≥ 8 CVD-separation gate in

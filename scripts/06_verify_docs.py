@@ -63,6 +63,15 @@ expect("bridge row count", f"{bridge_rows:,}", B, P)
 
 # Deliverables must all exist and be non-trivial.
 for rel, min_kb in [
+    ("streamlit_app.py", 15),
+    ("app/measures.py", 6),
+    ("app/__init__.py", 0),
+    (".streamlit/config.toml", 0.1),
+    ("tests/test_streamlit_measures.py", 4),
+    ("tests/test_streamlit_app.mjs", 3),
+    ("docs/STREAMLIT_DEPLOY.md", 4),
+    ("assets/streamlit-overview.png", 40),
+    ("assets/streamlit-opportunity.png", 40),
     ("dashboard/zomato_dashboard.html", 300),
     ("dashboard/kpis.json", 20),
     ("README.md", 8),
@@ -81,6 +90,26 @@ for rel, min_kb in [
     p = ROOT / rel
     kb = p.stat().st_size / 1024 if p.exists() else 0
     results.append((f"deliverable {rel}", kb >= min_kb, f"{kb:,.0f} KB (min {min_kb})"))
+
+# requirements.txt must cover the Streamlit app, because Streamlit Cloud
+# installs from it on every deploy and there is no other build step.
+req = (ROOT / "requirements.txt").read_text().lower()
+for pkg in ["pandas", "numpy", "streamlit", "plotly"]:
+    results.append((f"requirements.txt pins {pkg}", pkg in req, ""))
+
+# The Streamlit app must not have drifted back to the removed width API.
+app_src = (ROOT / "streamlit_app.py").read_text()
+results.append((
+    "streamlit app uses the current width API",
+    "use_container_width" not in app_src,
+    "no use_container_width= calls (removed after 2025-12-31)",
+))
+results.append((
+    "streamlit app and pipeline share the same thresholds",
+    all(f"MIN_{k}" in (ROOT / "app" / "measures.py").read_text()
+        for k in ["VOTES", "CITY_N", "CUISINE_N", "LOCALITY_N"]),
+    "MIN_VOTES / MIN_CITY_N / MIN_CUISINE_N / MIN_LOCALITY_N all defined",
+))
 
 # The CV bullet claims "5000+ restaurants" — assert the data supports it.
 results.append((
