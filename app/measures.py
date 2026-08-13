@@ -285,7 +285,7 @@ def correlations(df: pd.DataFrame) -> dict:
     return {
         "pearson": float(d["Average Cost for two"].corr(d["Aggregate rating"])),
         "spearman": float(
-            d["Average Cost for two"].corr(d["Aggregate rating"], method="spearman")
+            d["Average Cost for two"].rank().corr(d["Aggregate rating"].rank())
         ),
         "votes": float(np.log1p(d["Votes"]).corr(d["Aggregate rating"])),
         "n": int(len(d)),
